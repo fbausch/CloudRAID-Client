@@ -49,8 +49,8 @@ public class ServerConnector {
 	public boolean login() {
 		try {
 			boolean state = true;
-			HttpURLConnection con = (HttpURLConnection) sc.getURL("/user/auth")
-					.openConnection();
+			HttpURLConnection con = (HttpURLConnection) sc
+					.getURL("/user/auth/").openConnection();
 
 			con.setRequestMethod(POST);
 
@@ -169,8 +169,8 @@ public class ServerConnector {
 	}
 
 	public void putFile(String path, File inFile) throws IOException {
-		HttpURLConnection con = (HttpURLConnection) sc.getURL("/file/" + path)
-				.openConnection();
+		HttpURLConnection con = (HttpURLConnection) sc.getURL(
+				"/file/" + path + "/").openConnection();
 		con.setRequestMethod(PUT);
 		con.setRequestProperty(COOKIE, session);
 		con.setDoOutput(true);
@@ -210,8 +210,8 @@ public class ServerConnector {
 	}
 
 	public void deleteFile(String path) throws IOException {
-		HttpURLConnection con = (HttpURLConnection) sc.getURL("/file/" + path)
-				.openConnection();
+		HttpURLConnection con = (HttpURLConnection) sc.getURL(
+				"/file/" + path + "/").openConnection();
 		con.setRequestMethod(DELETE);
 		con.setRequestProperty(COOKIE, session);
 		con.connect();
