@@ -46,9 +46,18 @@ public class ServerConnection {
 		this.password = password;
 	}
 
+	/**
+	 * @deprecated
+	 * @see #getURL(String)
+	 * @return an URL
+	 */
 	public URL getURL() {
+		return getURL("");
+	}
+
+	public URL getURL(String path) {
 		try {
-			return new URL(server + ":" + port);
+			return new URL(server + ":" + port + path);
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 			return null;

@@ -33,7 +33,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
-public class MainWindow extends JFrame {
+public class MainWindow extends JFrame implements DataPresenter {
 
 	private static final long serialVersionUID = 7714408179804838679L;
 
@@ -103,15 +103,25 @@ public class MainWindow extends JFrame {
 
 		this.setResizable(false);
 		this.setJMenuBar(menuBar);
+		
+		ClientMain.registerDataPresenter(this);
+		
+		this.setVisible(true);
 	}
 
 	private void emptyTable() {
 		this.refreshTable(new String[][] { { "", "", "" } });
 	}
 
-	public void refreshTable(Object[][] newContent) {
-		DefaultTableModel model = new DefaultTableModel(newContent, this.headings);
+	private void refreshTable(Object[][] newContent) {
+		DefaultTableModel model = new DefaultTableModel(newContent,
+				this.headings);
 		table.setModel(model);
+	}
+
+	@Override
+	public void giveFileList(Object[][] fileList) {
+		this.refreshTable(fileList);
 	}
 
 }
