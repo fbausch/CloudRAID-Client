@@ -31,6 +31,14 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
 
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+
+/**
+ * Manages the connection to a CloudRAID server.
+ * 
+ * @author Florian Bausch
+ * 
+ */
 public class ServerConnector {
 
 	private static final String GET = "GET", POST = "POST", DELETE = "DELETE",
@@ -46,10 +54,26 @@ public class ServerConnector {
 	private ServerConnection sc;
 	private String session = null;
 
+	/**
+	 * Creates a {@link ServerConnector} basing on the credentials in a
+	 * {@link ServerConnection}.
+	 * 
+	 * @param sc
+	 *            A {@link ServerConnection}.
+	 */
 	public ServerConnector(ServerConnection sc) {
 		this.sc = sc;
 	}
 
+	/**
+	 * Logs in to the server with the data from the constructor's
+	 * {@link ServerConnection}. If the login is <b>not</b> successful an
+	 * {@link HTTPException} will be thrown. If there is a problem as an
+	 * unreachable server, an {@link IOException} will be thrown.
+	 * 
+	 * @throws IOException
+	 * @throws HTTPException
+	 */
 	public void login() throws IOException, HTTPException {
 		HttpURLConnection con = (HttpURLConnection) sc.getURL("/user/auth/")
 				.openConnection();
@@ -81,6 +105,13 @@ public class ServerConnector {
 		}
 	}
 
+	/**
+	 * Ends a session on the server. An {@link HTTPException} will be thrown, if
+	 * there is another HTTP status than 200.
+	 * 
+	 * @throws IOException
+	 * @throws HTTPException
+	 */
 	public void logout() throws IOException, HTTPException {
 		boolean resetSession = true;
 		HttpURLConnection con = (HttpURLConnection) sc.getURL(
@@ -113,6 +144,17 @@ public class ServerConnector {
 		}
 	}
 
+	/**
+	 * Gets a file from the server. The returned {@link File} object is a
+	 * temporary file, move it to the correct directory and remove it from the
+	 * temporary location.
+	 * 
+	 * @param path
+	 *            The path of the file on the server.
+	 * @return The temporary file.
+	 * @throws IOException
+	 * @throws HTTPException
+	 */
 	public File getFile(String path) throws IOException, HTTPException {
 		File newFile = new File("/tmp/cloudraid-client/" + System.nanoTime()
 				+ ".tmp");
@@ -163,6 +205,16 @@ public class ServerConnector {
 		return newFile;
 	}
 
+	/**
+	 * Sends a file to the server.
+	 * 
+	 * @param path
+	 *            The path of the file on the server.
+	 * @param inFile
+	 *            The file to read the data from.
+	 * @throws IOException
+	 * @throws HTTPException
+	 */
 	public void putFile(String path, File inFile) throws IOException,
 			HTTPException {
 		HttpURLConnection con = (HttpURLConnection) sc.getURL(
@@ -210,6 +262,14 @@ public class ServerConnector {
 		}
 	}
 
+	/**
+	 * Deletes a file on the server.
+	 * 
+	 * @param path
+	 *            The path of the file on the server.
+	 * @throws IOException
+	 * @throws HTTPException
+	 */
 	public void deleteFile(String path) throws IOException, HTTPException {
 		HttpURLConnection con = (HttpURLConnection) sc.getURL(
 				"/file/" + path + "/").openConnection();
@@ -240,8 +300,13 @@ public class ServerConnector {
 		}
 	}
 
-	public ArrayList<CloudFile> getFileList() {
-		return null;
+	/**
+	 * Retrieves a file list from the server.
+	 * 
+	 * @return An {@link ArrayList} of {@link CloudFile}s.
+	 */
+	public ArrayList<CloudFile> getFileList() {// TODO: implement
+		throw new NotImplementedException();
 	}
 
 }

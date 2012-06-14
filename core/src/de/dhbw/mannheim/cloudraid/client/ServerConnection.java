@@ -39,20 +39,11 @@ public class ServerConnection {
 
 	public ServerConnection(String server, String user, String password,
 			short port) throws MalformedURLException {
-		new URL(server + ":" + port);
+		new URL(server + ":" + port); // Test, if server and port are valid
 		this.server = server;
 		this.port = port;
 		this.user = user;
 		this.password = password;
-	}
-
-	/**
-	 * @deprecated
-	 * @see #getURL(String)
-	 * @return an URL
-	 */
-	public URL getURL() {
-		return getURL("");
 	}
 
 	public URL getURL(String path) {
