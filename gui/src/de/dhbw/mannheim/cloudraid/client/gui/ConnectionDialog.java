@@ -20,7 +20,7 @@
  * under the License.
  */
 
-package de.dhbw.mannheim.cloudraid.client;
+package de.dhbw.mannheim.cloudraid.client.gui;
 
 import java.awt.Dimension;
 import java.awt.GridLayout;
@@ -40,6 +40,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
+
+import de.dhbw.mannheim.cloudraid.client.api.ServerConnection;
 
 public class ConnectionDialog extends JDialog {
 

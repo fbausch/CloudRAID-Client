@@ -20,18 +20,19 @@
  * under the License.
  */
 
-package de.dhbw.mannheim.cloudraid.client;
+package de.dhbw.mannheim.cloudraid.client.api;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
 
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * Manages the connection to a CloudRAID server.
@@ -168,16 +169,16 @@ public class ServerConnector {
 		con.setDoInput(true);
 		con.connect();
 		try {
-			is = con.getInputStream();
-			os = new FileOutputStream(newFile);
-			byte[] buf = new byte[4096];
-			int len;
-			while ((len = is.read(buf)) > 0) {
-				os.write(buf, 0, len);
-			}
 			switch (con.getResponseCode()) {
 			case 200:
 				System.out.println("get: success");
+				is = con.getInputStream();
+				os = new FileOutputStream(newFile);
+				byte[] buf = new byte[4096];
+				int len;
+				while ((len = is.read(buf)) > 0) {
+					os.write(buf, 0, len);
+				}
 				break;
 			case 401:
 				throw new HTTPException(401, "get: " + HTTP401);
@@ -234,7 +235,7 @@ public class ServerConnector {
 			}
 			os.close();
 			switch (con.getResponseCode()) {
-			case 200:
+			case 201:
 				System.out.println("put: upload done");
 				break;
 			case 401:
@@ -304,9 +305,51 @@ public class ServerConnector {
 	 * Retrieves a file list from the server.
 	 * 
 	 * @return An {@link ArrayList} of {@link CloudFile}s.
+	 * @throws IOException
+	 * @throws HTTPException
 	 */
-	public ArrayList<CloudFile> getFileList() {// TODO: implement
-		throw new NotImplementedException();
-	}
+	public ArrayList<CloudFile> getFileList() throws IOException, HTTPException {
+		ArrayList<CloudFile> ret = new ArrayList<CloudFile>();
+		BufferedReader br = null;
+		HttpURLConnection con = (HttpURLConnection) sc.getURL("/list/")
+				.openConnection();
+		con.setRequestMethod(GET);
+		con.setRequestProperty(COOKIE, session);
+		con.connect();
+		try {
 
+			switch (con.getResponseCode()) {
+			case 200:
+				System.out.println("list: successful");
+				br = new BufferedReader(new InputStreamReader(
+						con.getInputStream()));
+				String line;
+				while ((line = br.readLine()) != null) {
+					// TODO: Add data handling
+					String[] parts = line.split(",");
+					ret.add(new CloudFile(this, parts[0], parts[1], 0L));
+				}
+				break;
+			case 401:
+				throw new HTTPException(401, "list: " + HTTP401);
+			case 405:
+				throw new HTTPException(405, "list: " + HTTP405);
+			case 500:
+				throw new HTTPException(500,
+						"list: error getting the file information");
+			case 503:
+				throw new HTTPException(503, "list: " + HTTP503);
+			default:
+				throw new HTTPException(con.getResponseCode(), "list: "
+						+ HTTP_UNKNOWN);
+			}
+		} finally {
+			try {
+				br.close();
+			} catch (Exception ignore) {
+			}
+			con.disconnect();
+		}
+		return null;
+	}
 }

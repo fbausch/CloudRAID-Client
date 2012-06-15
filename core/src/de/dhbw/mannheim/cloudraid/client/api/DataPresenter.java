@@ -20,36 +20,10 @@
  * under the License.
  */
 
-package de.dhbw.mannheim.cloudraid.client;
+package de.dhbw.mannheim.cloudraid.client.api;
 
-public class CloudFile {
-
-	private String path, name;
-	private long lastMod;
-	private ServerConnector sc;
-
-	protected CloudFile(ServerConnector sc, String path, String name,
-			long lastMod) {
-		this.sc = sc;
-		this.path = path;
-		this.name = name;
-		this.lastMod = lastMod;
-	}
-
-	public String getPath() {
-		return path;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public long getLastMod() {
-		return lastMod;
-	}
-
-	public ServerConnector getSc() {
-		return sc;
-	}
+public interface DataPresenter {
+	
+	public void giveFileList(Object[][] fileList);
 
 }

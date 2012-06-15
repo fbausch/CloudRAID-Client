@@ -20,10 +20,14 @@
  * under the License.
  */
 
-package de.dhbw.mannheim.cloudraid.client;
+package de.dhbw.mannheim.cloudraid.client.gui;
 
 import java.net.MalformedURLException;
 import java.util.LinkedList;
+
+import de.dhbw.mannheim.cloudraid.client.api.DataPresenter;
+import de.dhbw.mannheim.cloudraid.client.api.ServerConnection;
+import de.dhbw.mannheim.cloudraid.client.api.ServerConnector;
 
 public class ClientMain {
 

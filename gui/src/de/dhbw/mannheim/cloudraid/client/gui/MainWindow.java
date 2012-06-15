@@ -20,10 +20,11 @@
  * under the License.
  */
 
-package de.dhbw.mannheim.cloudraid.client;
+package de.dhbw.mannheim.cloudraid.client.gui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -32,6 +33,10 @@ import javax.swing.JMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
+
+import de.dhbw.mannheim.cloudraid.client.api.DataPresenter;
+import de.dhbw.mannheim.cloudraid.client.api.HTTPException;
+import de.dhbw.mannheim.cloudraid.client.api.ServerConnector;
 
 public class MainWindow extends JFrame implements DataPresenter {
 
@@ -62,7 +67,15 @@ public class MainWindow extends JFrame implements DataPresenter {
 				if (ClientMain.getServerConnection() != null) {
 					ServerConnector sc = new ServerConnector(ClientMain
 							.getServerConnection());
-					sc.getFileList();
+					try {
+						sc.getFileList();
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					} catch (HTTPException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
 				} else {
 					MainWindow.this.emptyTable();
 				}
@@ -103,9 +116,9 @@ public class MainWindow extends JFrame implements DataPresenter {
 
 		this.setResizable(false);
 		this.setJMenuBar(menuBar);
-		
+
 		ClientMain.registerDataPresenter(this);
-		
+
 		this.setVisible(true);
 	}
 
