@@ -25,15 +25,19 @@ package de.dhbw.mannheim.cloudraid.client.gui;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Date;
 
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
+import de.dhbw.mannheim.cloudraid.client.api.CloudFile;
 import de.dhbw.mannheim.cloudraid.client.api.DataPresenter;
 import de.dhbw.mannheim.cloudraid.client.api.HTTPException;
 import de.dhbw.mannheim.cloudraid.client.api.ServerConnector;
@@ -47,10 +51,11 @@ public class MainWindow extends JFrame implements DataPresenter {
 	private JMenuItem connectItem, closeItem, uploadItem, refreshItem;
 	private JTable table;
 	private JScrollPane scrollPane;
-	private String[] headings = new String[] { "Name", "Path", "Date" };
+	private static final String[] HEADINGS = new String[] { "Name", "Path",
+			"Date" };
 
 	public MainWindow() {
-		super("CloudRAID");
+		super("CloudRAID Client GUI");
 		this.setLayout(null);
 		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
 		this.setBounds(50, 50, 300, 230);
@@ -63,26 +68,65 @@ public class MainWindow extends JFrame implements DataPresenter {
 		connectItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				ClientMain.resetServerConnection();
+				ArrayList<CloudFile> fileList = null;
 				new ConnectionDialog(MainWindow.this);
-				if (ClientMain.getServerConnection() != null) {
-					ServerConnector sc = new ServerConnector(ClientMain
-							.getServerConnection());
+				ServerConnector sc = ClientMain.getServerConnector();
+				if (sc != null) {
 					try {
-						sc.getFileList();
+						sc.login();
+						fileList = sc.getFileList();
 					} catch (IOException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
+						JOptionPane.showMessageDialog(MainWindow.this,
+								e1.getMessage(),
+								"Error while connecting to the server.",
+								JOptionPane.ERROR_MESSAGE);
 					} catch (HTTPException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
+						JOptionPane.showMessageDialog(MainWindow.this,
+								e1.getHTTPErrorMessage(), e1.getHTTPCode()
+										+ ": Error", ERROR);
 					}
-				} else {
-					MainWindow.this.emptyTable();
+
+				}
+				MainWindow.this.emptyTable();
+				if (fileList != null) {
+					String[][] data = new String[fileList.size()][3];
+					for (int i = 0; i < fileList.size(); i++) {
+						CloudFile cf = fileList.get(i);
+						String[] d = new String[] { cf.getName(), cf.getPath(),
+								new Date(cf.getLastMod()).toString() };
+						data[i] = d;
+					}
+					MainWindow.this.giveFileList(data);
 				}
 			}
 		});
 
 		closeItem = new JMenuItem("Close");
+		closeItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				int r = JOptionPane.showConfirmDialog(MainWindow.this,
+						"Are you sure to log out?", "Confirm exit",
+						JOptionPane.YES_NO_OPTION,
+						JOptionPane.INFORMATION_MESSAGE);
+				if (r != JOptionPane.YES_OPTION) {
+					return;
+				}
+				ServerConnector sc = ClientMain.getServerConnector();
+				if (sc != null) {
+					try {
+						sc.logout();
+					} catch (IOException ignore) {
+					} catch (HTTPException e1) {
+						JOptionPane.showMessageDialog(MainWindow.this,
+								e1.getHTTPErrorMessage(), e1.getHTTPCode()
+										+ ": Error", JOptionPane.ERROR_MESSAGE);
+					}
+				}
+				MainWindow.this.dispose();
+			}
+		});
 
 		fileMenu.add(connectItem);
 		fileMenu.add(closeItem);
@@ -99,7 +143,7 @@ public class MainWindow extends JFrame implements DataPresenter {
 
 		String[][] content = new String[][] { { "name", "path", "date" } };
 
-		DefaultTableModel model = new DefaultTableModel(content, this.headings);
+		DefaultTableModel model = new DefaultTableModel(content, HEADINGS);
 		table = new JTable(model) {
 			private static final long serialVersionUID = 1110008116372652220L;
 
@@ -127,8 +171,7 @@ public class MainWindow extends JFrame implements DataPresenter {
 	}
 
 	private void refreshTable(Object[][] newContent) {
-		DefaultTableModel model = new DefaultTableModel(newContent,
-				this.headings);
+		DefaultTableModel model = new DefaultTableModel(newContent, HEADINGS);
 		table.setModel(model);
 	}
 

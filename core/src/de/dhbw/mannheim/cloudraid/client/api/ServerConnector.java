@@ -354,6 +354,6 @@ public class ServerConnector {
 			}
 			con.disconnect();
 		}
-		return null;
+		return ret;
 	}
 }

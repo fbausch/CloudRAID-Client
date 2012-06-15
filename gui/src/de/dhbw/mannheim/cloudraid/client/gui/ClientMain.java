@@ -32,6 +32,7 @@ import de.dhbw.mannheim.cloudraid.client.api.ServerConnector;
 public class ClientMain {
 
 	private static ServerConnection serverConnection = null;
+	private static ServerConnector serverConnector = null;
 	private static LinkedList<DataPresenter> dpList = new LinkedList<DataPresenter>();
 
 	/**
@@ -42,6 +43,7 @@ public class ClientMain {
 	 */
 	public static synchronized void setServerConnection(ServerConnection sc) {
 		ClientMain.serverConnection = sc;
+		ClientMain.serverConnector = new ServerConnector(sc);
 	}
 
 	/**
@@ -59,23 +61,17 @@ public class ClientMain {
 	 */
 	public static synchronized void resetServerConnection() {
 		ClientMain.serverConnection = null;
+		ClientMain.serverConnector = null;
 	}
 
 	/**
 	 * Returns a {@link ServerConnector} that uses the current
-	 * {@link ServerConnection}. Throws a {@link NullPointerException}, if there
-	 * is no current {@link ServerConnection}.
+	 * {@link ServerConnection}.
 	 * 
 	 * @return A {@link ServerConnector}.
-	 * @throws NullPointerException
 	 */
-	public static synchronized ServerConnector getServerConnector()
-			throws NullPointerException {
-		if (ClientMain.serverConnection == null) {
-			throw new NullPointerException("No SeverConnection available");
-		} else {
-			return new ServerConnector(ClientMain.serverConnection);
-		}
+	public static synchronized ServerConnector getServerConnector() {
+		return ClientMain.serverConnector;
 	}
 
 	public static synchronized void registerDataPresenter(DataPresenter dp) {
