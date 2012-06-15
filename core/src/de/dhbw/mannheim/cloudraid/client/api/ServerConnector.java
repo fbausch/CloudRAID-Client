@@ -33,7 +33,6 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
 
-
 /**
  * Manages the connection to a CloudRAID server.
  * 
@@ -326,7 +325,12 @@ public class ServerConnector {
 				String line;
 				while ((line = br.readLine()) != null) {
 					// TODO: Add data handling
-					String[] parts = line.split(",");
+					String[] parts = line.substring(1, line.length()).split(
+							"\",\"");
+					for (int i = 0; i < parts.length; i++) {
+						parts[i] = parts[i].replaceAll("&quot;", "\"")
+								.replaceAll("&amp;", "&");
+					}
 					ret.add(new CloudFile(this, parts[0], parts[1], 0L));
 				}
 				break;
