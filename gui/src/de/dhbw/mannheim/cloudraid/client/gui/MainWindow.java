@@ -148,10 +148,7 @@ public class MainWindow extends JFrame implements DataPresenter {
 				MainWindow.this.emptyTable();
 				if (fileList != null) {
 					// MainWindow.this.giveFileList(fileList);
-					MainWindow.this.connectItem.setEnabled(false);
-					MainWindow.this.disconnectItem.setEnabled(true);
-					MainWindow.this.refreshItem.setEnabled(true);
-					MainWindow.this.uploadItem.setEnabled(true);
+					MainWindow.this.deActivateComponents(true);
 				}
 			}
 		});
@@ -163,10 +160,7 @@ public class MainWindow extends JFrame implements DataPresenter {
 			public void actionPerformed(ActionEvent e) {
 				try {
 					ClientMain.getServerConnector().logout();
-					MainWindow.this.connectItem.setEnabled(true);
-					MainWindow.this.disconnectItem.setEnabled(false);
-					MainWindow.this.refreshItem.setEnabled(false);
-					MainWindow.this.uploadItem.setEnabled(false);
+					MainWindow.this.deActivateComponents(false);
 					MainWindow.this.emptyTable();
 					ClientMain.resetServerConnection();
 				} catch (IOException e1) {
@@ -307,10 +301,19 @@ public class MainWindow extends JFrame implements DataPresenter {
 		this.setVisible(true);
 	}
 
+	/**
+	 * Removes all data from the table containing the file list.
+	 */
 	private void emptyTable() {
 		this.refreshTable(new String[][] { { "", "", "" } });
 	}
 
+	/**
+	 * Refreshes the table containing the file list with the given data.
+	 * 
+	 * @param newContent
+	 *            The new data.
+	 */
 	private void refreshTable(Object[][] newContent) {
 		DefaultTableModel model = new DefaultTableModel(newContent, HEADINGS);
 		table.setModel(model);
@@ -392,7 +395,7 @@ public class MainWindow extends JFrame implements DataPresenter {
 	 *            The {@link IOException}.
 	 */
 	private void showError(IOException e) {
-		JOptionPane.showMessageDialog(MainWindow.this, e.getMessage(),
+		JOptionPane.showMessageDialog(this, e.getMessage(),
 				"Error while connecting to the server.",
 				JOptionPane.ERROR_MESSAGE);
 	}
@@ -405,7 +408,21 @@ public class MainWindow extends JFrame implements DataPresenter {
 	 *            The {@link HTTPException}.
 	 */
 	private void showError(HTTPException e) {
-		JOptionPane.showMessageDialog(MainWindow.this, e.getHTTPErrorMessage(),
+		JOptionPane.showMessageDialog(this, e.getHTTPErrorMessage(),
 				e.getHTTPCode() + ": Error", JOptionPane.ERROR_MESSAGE);
+	}
+
+	/**
+	 * Activates or deactivates components on the GUI depending on whether the
+	 * client is logged in or not.
+	 * 
+	 * @param loggedIn
+	 *            <code>true</code>, if the client is logged in to the server.
+	 */
+	private void deActivateComponents(boolean loggedIn) {
+		this.connectItem.setEnabled(!loggedIn);
+		this.disconnectItem.setEnabled(loggedIn);
+		this.refreshItem.setEnabled(loggedIn);
+		this.uploadItem.setEnabled(loggedIn);
 	}
 }

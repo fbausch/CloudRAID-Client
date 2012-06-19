@@ -43,18 +43,23 @@ import java.util.Date;
  * 
  */
 public class ServerConnector {
+	/**
+	 * The date format used by the CloudRAID server.
+	 */
+	public static final SimpleDateFormat CLOUDRAID_DATE_FORMAT = new SimpleDateFormat(
+			"yyyy-MM-dd hh:mm:ss.S");
 
 	private static final String GET = "GET", POST = "POST", DELETE = "DELETE",
 			PUT = "PUT";
-	private static final String USER = "X-Username", PASSW = "X-Password"
-	/* , CONFIRM = "X-Confirm" */;
+	private static final String USER = "X-Username", PASSW = "X-Password",
+			CONTENT_LENGTH = "Content-Length"
+			/* , CONFIRM = "X-Confirm" */;
 	private static final String SET_COOKIE = "Set-Cookie", COOKIE = "Cookie";
 	private static final String HTTP401 = "not logged in",
 			HTTP404 = "file not found", HTTP405 = "session not transmitted",
 			HTTP406 = "already logged in", HTTP409 = "conflict",
 			HTTP411 = "content-length required",
 			HTTP503 = "session does not exist", HTTP_UNKNOWN = "unknown error";
-	private static final String CONTENT_LENGTH = "Content-Length";
 
 	private ServerConnection sc;
 	private String session = null;
@@ -365,8 +370,7 @@ public class ServerConnector {
 					if ("".equals(line) || line.length() < 3) {
 						continue;
 					}
-					// TODO: Add data handling
-					// "test","","1970-01-01 01:00:00.0","UPLOADED"
+					// "name","hash","1970-01-01 01:00:00.0","STATE"
 					String[] parts = line.substring(1, line.length() - 1)
 							.split("\",\"");
 					if (parts.length != 4) {
@@ -377,14 +381,10 @@ public class ServerConnector {
 								.replaceAll("&amp;", "&");
 					}
 					System.out.println(line);
-					SimpleDateFormat sdf = new SimpleDateFormat(
-							"yyyy-MM-dd hh:mm:ss.S");
 					Date date;
 					try {
-						date = sdf.parse(parts[2]);
+						date = CLOUDRAID_DATE_FORMAT.parse(parts[2]);
 					} catch (ParseException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
 						continue;
 					}
 					ret.add(new CloudFile(this, parts[0], parts[3], date
