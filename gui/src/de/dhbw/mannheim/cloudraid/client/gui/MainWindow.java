@@ -24,15 +24,25 @@ package de.dhbw.mannheim.cloudraid.client.gui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
@@ -49,23 +59,75 @@ public class MainWindow extends JFrame implements DataPresenter {
 	private JMenuBar menuBar;
 	private JMenu fileMenu;
 	private JMenuItem connectItem, disconnectItem, closeItem, uploadItem,
-			refreshItem;
+			refreshItem, deleteItem, downloadItem;
 	private JTable table;
+	private JPopupMenu popup;
 	private JScrollPane scrollPane;
+	private String clickedPath;
 	private static final String[] HEADINGS = new String[] { "Name", "State",
 			"Date" };
 
 	public MainWindow() {
 		super("CloudRAID Client GUI");
 		this.setLayout(null);
-		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
-		this.setBounds(50, 50, 300, 230);
+		this.setBounds(50, 50, 600, 430);
+		this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		this.addWindowListener(new WindowAdapter() {
+			public void windowClosing(WindowEvent e) {
+				MainWindow.this.quit();
+			}
+		});
+
+		popup = new JPopupMenu("File Actions");
+		deleteItem = new JMenuItem("Delete");
+		deleteItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				ServerConnector sc = ClientMain.getServerConnector();
+				if (sc != null) {
+					System.out.println("delete: " + clickedPath);
+					try {
+						sc.deleteFile(clickedPath);
+						MainWindow.this.giveFileList(sc.getFileList());
+					} catch (IOException e1) {
+						MainWindow.this.showError(e1);
+					} catch (HTTPException e1) {
+						MainWindow.this.showError(e1);
+					}
+				}
+			}
+		});
+		downloadItem = new JMenuItem("Download");
+		downloadItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				ServerConnector sc = ClientMain.getServerConnector();
+				if (sc != null) {
+					System.out.println("download: " + clickedPath);
+					try {
+						File f = sc.getFile(clickedPath);
+						System.out.println(new File(clickedPath)
+								.getAbsolutePath());
+						MainWindow.this.fileCopy(f, new File(clickedPath));
+						f.delete();
+					} catch (IOException e1) {
+						MainWindow.this.showError(e1);
+					} catch (HTTPException e1) {
+						MainWindow.this.showError(e1);
+					}
+				}
+			}
+		});
+		popup.add(deleteItem);
+		popup.add(downloadItem);
 
 		menuBar = new JMenuBar();
 
 		fileMenu = new JMenu("CloudRAID");
+		fileMenu.setMnemonic('c');
 
 		connectItem = new JMenuItem("Connect...");
+		connectItem.setMnemonic('c');
 		connectItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -78,27 +140,24 @@ public class MainWindow extends JFrame implements DataPresenter {
 						sc.login();
 						fileList = sc.getFileList();
 					} catch (IOException e1) {
-						JOptionPane.showMessageDialog(MainWindow.this,
-								e1.getMessage(),
-								"Error while connecting to the server.",
-								JOptionPane.ERROR_MESSAGE);
+						MainWindow.this.showError(e1);
 					} catch (HTTPException e1) {
-						JOptionPane.showMessageDialog(MainWindow.this,
-								e1.getHTTPErrorMessage(), e1.getHTTPCode()
-										+ ": Error", JOptionPane.ERROR_MESSAGE);
+						MainWindow.this.showError(e1);
 					}
 				}
 				MainWindow.this.emptyTable();
 				if (fileList != null) {
-					MainWindow.this.giveFileList(fileList);
+					// MainWindow.this.giveFileList(fileList);
 					MainWindow.this.connectItem.setEnabled(false);
 					MainWindow.this.disconnectItem.setEnabled(true);
 					MainWindow.this.refreshItem.setEnabled(true);
+					MainWindow.this.uploadItem.setEnabled(true);
 				}
 			}
 		});
 
-		disconnectItem = new JMenuItem("Disconnect...");
+		disconnectItem = new JMenuItem("Disconnect");
+		disconnectItem.setMnemonic('d');
 		disconnectItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -107,43 +166,24 @@ public class MainWindow extends JFrame implements DataPresenter {
 					MainWindow.this.connectItem.setEnabled(true);
 					MainWindow.this.disconnectItem.setEnabled(false);
 					MainWindow.this.refreshItem.setEnabled(false);
+					MainWindow.this.uploadItem.setEnabled(false);
 					MainWindow.this.emptyTable();
 					ClientMain.resetServerConnection();
 				} catch (IOException e1) {
-					JOptionPane.showMessageDialog(MainWindow.this,
-							e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+					MainWindow.this.showError(e1);
 				} catch (HTTPException e1) {
-					JOptionPane.showMessageDialog(MainWindow.this,
-							e1.getHTTPErrorMessage(), e1.getHTTPCode()
-									+ ": Error", JOptionPane.ERROR_MESSAGE);
+					MainWindow.this.showError(e1);
 				}
 			}
 		});
 		disconnectItem.setEnabled(false);
 
-		closeItem = new JMenuItem("Close");
+		closeItem = new JMenuItem("Quit...");
+		closeItem.setMnemonic('q');
 		closeItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				int r = JOptionPane.showConfirmDialog(MainWindow.this,
-						"Are you sure to log out?", "Confirm exit",
-						JOptionPane.YES_NO_OPTION,
-						JOptionPane.INFORMATION_MESSAGE);
-				if (r != JOptionPane.YES_OPTION) {
-					return;
-				}
-				ServerConnector sc = ClientMain.getServerConnector();
-				if (sc != null) {
-					try {
-						sc.logout();
-					} catch (IOException ignore) {
-					} catch (HTTPException e1) {
-						JOptionPane.showMessageDialog(MainWindow.this,
-								e1.getHTTPErrorMessage(), e1.getHTTPCode()
-										+ ": Error", JOptionPane.ERROR_MESSAGE);
-					}
-				}
-				MainWindow.this.dispose();
+				MainWindow.this.quit();
 			}
 		});
 
@@ -152,9 +192,42 @@ public class MainWindow extends JFrame implements DataPresenter {
 		fileMenu.add(closeItem);
 
 		uploadItem = new JMenuItem("Upload a file");
+		uploadItem.setMnemonic('u');
+		uploadItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JFileChooser fc = new JFileChooser();
+				int state = fc.showOpenDialog(MainWindow.this);
+				if (state == JFileChooser.APPROVE_OPTION) {
+					ServerConnector sc = ClientMain.getServerConnector();
+					try {
+						sc.putFile(fc.getSelectedFile().getName(),
+								fc.getSelectedFile(), false);
+						MainWindow.this.giveFileList(sc.getFileList());
+					} catch (IOException e1) {
+						MainWindow.this.showError(e1);
+					} catch (HTTPException e1) {
+						if (e1.getHTTPCode() == 409) {
+							try {
+								sc.putFile(fc.getSelectedFile().getName(),
+										fc.getSelectedFile(), true);
+								MainWindow.this.giveFileList(sc.getFileList());
+							} catch (IOException e2) {
+								MainWindow.this.showError(e2);
+							} catch (HTTPException e2) {
+								MainWindow.this.showError(e2);
+							}
+						} else {
+							MainWindow.this.showError(e1);
+						}
+					}
+				}
+			}
+		});
 		uploadItem.setEnabled(false);
 
 		refreshItem = new JMenuItem("Refresh list");
+		refreshItem.setMnemonic('r');
 		refreshItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -163,13 +236,9 @@ public class MainWindow extends JFrame implements DataPresenter {
 					try {
 						MainWindow.this.giveFileList(sc.getFileList());
 					} catch (IOException e1) {
-						JOptionPane.showMessageDialog(MainWindow.this,
-								e1.getMessage(), "Error",
-								JOptionPane.ERROR_MESSAGE);
+						MainWindow.this.showError(e1);
 					} catch (HTTPException e1) {
-						JOptionPane.showMessageDialog(MainWindow.this,
-								e1.getHTTPErrorMessage(), e1.getHTTPCode()
-										+ ": Error", JOptionPane.ERROR_MESSAGE);
+						MainWindow.this.showError(e1);
 					}
 				}
 			}
@@ -190,17 +259,50 @@ public class MainWindow extends JFrame implements DataPresenter {
 				return false; // Disallow the editing of any cell
 			}
 		};
+		table.addMouseListener(new MouseListener() {
+			@Override
+			public void mouseReleased(MouseEvent e) {
+			}
+
+			@Override
+			public void mousePressed(MouseEvent e) {
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e) {
+			}
+
+			@Override
+			public void mouseEntered(MouseEvent e) {
+			}
+
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (e.getButton() != MouseEvent.BUTTON3) {
+					return;
+				}
+				int row = MainWindow.this.table.rowAtPoint(e.getPoint());
+				if (row < 0) {
+					return;
+				}
+				String path = (String) MainWindow.this.table.getModel()
+						.getValueAt(row, 0);
+				if ("".equals(path)) {
+					return;
+				}
+				MainWindow.this.clickedPath = path;
+				MainWindow.this.popup.show(e.getComponent(), e.getX(), e.getY());
+			}
+		});
 
 		scrollPane = new JScrollPane(table);
-		scrollPane.setBounds(0, 0, 300, 200);
+		scrollPane.setBounds(0, 0, 600, 400);
 		table.setFillsViewportHeight(true);
 
 		this.getContentPane().add(scrollPane);
 
 		this.setResizable(false);
 		this.setJMenuBar(menuBar);
-
-		ClientMain.registerDataPresenter(this);
 
 		this.setVisible(true);
 	}
@@ -226,4 +328,84 @@ public class MainWindow extends JFrame implements DataPresenter {
 		this.refreshTable(data);
 	}
 
+	/**
+	 * Copies file a to file b
+	 * 
+	 * @param a
+	 * @param b
+	 */
+	private void fileCopy(File a, File b) {
+		FileWriter out = null;
+		FileReader in = null;
+		try {
+			try {
+				in = new FileReader(a);
+				out = new FileWriter(b);
+				int c;
+
+				while ((c = in.read()) != -1)
+					out.write(c);
+			} catch (FileNotFoundException e) {
+				return;
+			} catch (IOException e) {
+				return;
+			}
+		} finally {
+			try {
+				in.close();
+			} catch (IOException ignore) {
+			}
+			try {
+				out.close();
+			} catch (IOException ignore) {
+			}
+		}
+	}
+
+	/**
+	 * Closes the MainWindow and exits the application.
+	 */
+	private void quit() {
+		int r = JOptionPane.showConfirmDialog(MainWindow.this,
+				"Are you sure to close the CloudRAID client?", "Confirm exit",
+				JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
+		if (r != JOptionPane.YES_OPTION) {
+			return;
+		}
+		ServerConnector sc = ClientMain.getServerConnector();
+		if (sc != null) {
+			try {
+				sc.logout();
+			} catch (IOException ignore) {
+			} catch (HTTPException e1) {
+				showError(e1);
+			}
+		}
+		MainWindow.this.dispose();
+	}
+
+	/**
+	 * Shows the error message via a pop-up when an {@link IOException} is
+	 * thrown.
+	 * 
+	 * @param e
+	 *            The {@link IOException}.
+	 */
+	private void showError(IOException e) {
+		JOptionPane.showMessageDialog(MainWindow.this, e.getMessage(),
+				"Error while connecting to the server.",
+				JOptionPane.ERROR_MESSAGE);
+	}
+
+	/**
+	 * Shows the error message via a pop-up when an {@link HTTPException} is
+	 * thrown.
+	 * 
+	 * @param e
+	 *            The {@link HTTPException}.
+	 */
+	private void showError(HTTPException e) {
+		JOptionPane.showMessageDialog(MainWindow.this, e.getHTTPErrorMessage(),
+				e.getHTTPCode() + ": Error", JOptionPane.ERROR_MESSAGE);
+	}
 }

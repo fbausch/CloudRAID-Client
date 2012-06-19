@@ -23,9 +23,7 @@
 package de.dhbw.mannheim.cloudraid.client.gui;
 
 import java.net.MalformedURLException;
-import java.util.LinkedList;
 
-import de.dhbw.mannheim.cloudraid.client.api.DataPresenter;
 import de.dhbw.mannheim.cloudraid.client.api.ServerConnection;
 import de.dhbw.mannheim.cloudraid.client.api.ServerConnector;
 
@@ -33,7 +31,7 @@ public class ClientMain {
 
 	private static ServerConnection serverConnection = null;
 	private static ServerConnector serverConnector = null;
-	private static LinkedList<DataPresenter> dpList = new LinkedList<DataPresenter>();
+	private static MainWindow mainWindow = null;
 
 	/**
 	 * Set a new {@link ServerConnection} for this application.
@@ -43,7 +41,7 @@ public class ClientMain {
 	 */
 	public static synchronized void setServerConnection(ServerConnection sc) {
 		ClientMain.serverConnection = sc;
-		ClientMain.serverConnector = new ServerConnector(sc);
+		ClientMain.serverConnector = new ServerConnector(sc, mainWindow);
 	}
 
 	/**
@@ -74,13 +72,9 @@ public class ClientMain {
 		return ClientMain.serverConnector;
 	}
 
-	public static synchronized void registerDataPresenter(DataPresenter dp) {
-		ClientMain.dpList.add(dp);
-	}
-
 	public static void main(String[] args) throws NumberFormatException,
 			MalformedURLException {
-		new MainWindow();
+		ClientMain.mainWindow = new MainWindow();
 	}
 
 }

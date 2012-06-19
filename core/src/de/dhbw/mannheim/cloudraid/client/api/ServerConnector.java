@@ -51,11 +51,15 @@ public class ServerConnector {
 	private static final String SET_COOKIE = "Set-Cookie", COOKIE = "Cookie";
 	private static final String HTTP401 = "not logged in",
 			HTTP404 = "file not found", HTTP405 = "session not transmitted",
-			HTTP406 = "already logged in", HTTP411 = "content-length required",
+			HTTP406 = "already logged in", HTTP409 = "conflict",
+			HTTP411 = "content-length required",
 			HTTP503 = "session does not exist", HTTP_UNKNOWN = "unknown error";
+	private static final String CONTENT_LENGTH = "Content-Length";
 
 	private ServerConnection sc;
 	private String session = null;
+
+	private ArrayList<DataPresenter> dataPresenters = new ArrayList<DataPresenter>();
 
 	/**
 	 * Creates a {@link ServerConnector} basing on the credentials in a
@@ -66,6 +70,20 @@ public class ServerConnector {
 	 */
 	public ServerConnector(ServerConnection sc) {
 		this.sc = sc;
+	}
+
+	/**
+	 * Creates a {@link ServerConnector} basing on the credentials in a
+	 * {@link ServerConnection}. The {@link DataPresenter} is also registered.
+	 * 
+	 * @param sc
+	 *            A {@link ServerConnection}.
+	 * @param dp
+	 *            A {@link DataPresenter}.
+	 */
+	public ServerConnector(ServerConnection sc, DataPresenter dp) {
+		this(sc);
+		this.dataPresenters.add(dp);
 	}
 
 	/**
@@ -220,19 +238,24 @@ public class ServerConnector {
 	 *            The path of the file on the server.
 	 * @param inFile
 	 *            The file to read the data from.
+	 * @param update
+	 *            Set to <code>true</code, if the file shall be updated.
 	 * @throws IOException
 	 * @throws HTTPException
 	 */
-	public void putFile(String path, File inFile) throws IOException,
-			HTTPException {
+	public void putFile(String path, File inFile, boolean update)
+			throws IOException, HTTPException {
+		String u = update ? "update/" : "";
 		HttpURLConnection con = (HttpURLConnection) sc.getURL(
-				"/file/" + path + "/").openConnection();
+				"/file/" + path + "/" + u).openConnection();
+		System.out.println(con.getURL().toString());
 		con.setRequestMethod(PUT);
 		con.setRequestProperty(COOKIE, session);
+		con.setRequestProperty(CONTENT_LENGTH, String.valueOf(inFile.length()));
 		con.setDoOutput(true);
 		con.connect();
 		InputStream is = new FileInputStream(inFile);
-		System.out.println("put: start upload");
+		System.out.println("put: start uploading " + path);
 		OutputStream os = con.getOutputStream();
 		try {
 			byte[] buf = new byte[4096];
@@ -251,6 +274,8 @@ public class ServerConnector {
 				throw new HTTPException(404, "put: " + HTTP404);
 			case 405:
 				throw new HTTPException(405, "put: " + HTTP405);
+			case 409:
+				throw new HTTPException(409, "put: " + HTTP409);
 			case 411:
 				throw new HTTPException(411, "put: " + HTTP411);
 			case 503:
@@ -311,7 +336,9 @@ public class ServerConnector {
 	}
 
 	/**
-	 * Retrieves a file list from the server.
+	 * Retrieves a file list from the server. The file list is automated given
+	 * to every {@link DataPresenter} registered with this
+	 * {@link ServerConnector}.
 	 * 
 	 * @return An {@link ArrayList} of {@link CloudFile}s.
 	 * @throws IOException
@@ -340,8 +367,8 @@ public class ServerConnector {
 					}
 					// TODO: Add data handling
 					// "test","","1970-01-01 01:00:00.0","UPLOADED"
-					String[] parts = line.substring(1, line.length()).split(
-							"\",\"");
+					String[] parts = line.substring(1, line.length() - 1)
+							.split("\",\"");
 					if (parts.length != 4) {
 						continue;
 					}
@@ -384,6 +411,19 @@ public class ServerConnector {
 			}
 			con.disconnect();
 		}
+		for (DataPresenter dp : dataPresenters) {
+			dp.giveFileList(ret);
+		}
 		return ret;
+	}
+
+	/**
+	 * Registers a {@link DataPresenter} with this {@link ServerConnector}.
+	 * 
+	 * @param dp
+	 *            A {@link DataPresenter}.
+	 */
+	public void registerDataPresenter(DataPresenter dp) {
+		this.dataPresenters.add(dp);
 	}
 }
