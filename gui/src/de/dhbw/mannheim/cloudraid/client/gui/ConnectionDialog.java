@@ -138,7 +138,7 @@ public class ConnectionDialog extends JDialog {
 		 */
 		portNumberLabel = new JLabel("Port");
 		portNumberLabel.setLabelFor(portNumber);
-		portNumber = new JTextField("1234");
+		portNumber = new JTextField("8080");
 		portNumber.addKeyListener(returnKeyListener);
 		portNumber.addFocusListener(new FocusListener() {
 			@Override
@@ -157,7 +157,7 @@ public class ConnectionDialog extends JDialog {
 		 */
 		userNameLabel = new JLabel("User");
 		userNameLabel.setLabelFor(userName);
-		userName = new JTextField("username");
+		userName = new JTextField("test");
 		userName.addKeyListener(returnKeyListener);
 		userName.addFocusListener(new FocusListener() {
 			@Override
@@ -176,7 +176,7 @@ public class ConnectionDialog extends JDialog {
 		 */
 		passWordLabel = new JLabel("Password");
 		passWordLabel.setLabelFor(passWord);
-		passWord = new JPasswordField("password");
+		passWord = new JPasswordField("test");
 		passWord.addKeyListener(returnKeyListener);
 		passWord.addKeyListener(new KeyListener() {
 			@Override
@@ -246,7 +246,8 @@ public class ConnectionDialog extends JDialog {
 					this.userName.getText(), String.valueOf(this.passWord
 							.getPassword()), port);
 		} catch (MalformedURLException e) {
-			JOptionPane.showMessageDialog(this, "This is not an URL.");
+			JOptionPane.showMessageDialog(this,
+					"This is not an URL.\n" + e.getMessage());
 			return;
 		}
 		ClientMain.setServerConnection(sc);

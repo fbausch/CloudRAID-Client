@@ -31,7 +31,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * Manages the connection to a CloudRAID server.
@@ -87,7 +90,7 @@ public class ServerConnector {
 			switch (con.getResponseCode()) {
 			case 202:
 				System.out.println("login: success");
-				for (String s :con.getHeaderField(SET_COOKIE).split(";")){
+				for (String s : con.getHeaderField(SET_COOKIE).split(";")) {
 					if (s.startsWith("JSESSIONID=")) {
 						session = s;
 					}
@@ -330,15 +333,35 @@ public class ServerConnector {
 				br = new BufferedReader(new InputStreamReader(
 						con.getInputStream()));
 				String line;
+				System.out.println("File list:");
 				while ((line = br.readLine()) != null) {
+					if ("".equals(line) || line.length() < 3) {
+						continue;
+					}
 					// TODO: Add data handling
+					// "test","","1970-01-01 01:00:00.0","UPLOADED"
 					String[] parts = line.substring(1, line.length()).split(
 							"\",\"");
+					if (parts.length != 4) {
+						continue;
+					}
 					for (int i = 0; i < parts.length; i++) {
 						parts[i] = parts[i].replaceAll("&quot;", "\"")
 								.replaceAll("&amp;", "&");
 					}
-					ret.add(new CloudFile(this, parts[0], parts[1], 0L));
+					System.out.println(line);
+					SimpleDateFormat sdf = new SimpleDateFormat(
+							"yyyy-MM-dd hh:mm:ss.S");
+					Date date;
+					try {
+						date = sdf.parse(parts[2]);
+					} catch (ParseException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+						continue;
+					}
+					ret.add(new CloudFile(this, parts[0], parts[3], date
+							.getTime(), parts[1]));
 				}
 				break;
 			case 401:

@@ -52,7 +52,7 @@ public class MainWindow extends JFrame implements DataPresenter {
 			refreshItem;
 	private JTable table;
 	private JScrollPane scrollPane;
-	private static final String[] HEADINGS = new String[] { "Name", "Path",
+	private static final String[] HEADINGS = new String[] { "Name", "State",
 			"Date" };
 
 	public MainWindow() {
@@ -93,6 +93,7 @@ public class MainWindow extends JFrame implements DataPresenter {
 					MainWindow.this.giveFileList(fileList);
 					MainWindow.this.connectItem.setEnabled(false);
 					MainWindow.this.disconnectItem.setEnabled(true);
+					MainWindow.this.refreshItem.setEnabled(true);
 				}
 			}
 		});
@@ -105,6 +106,9 @@ public class MainWindow extends JFrame implements DataPresenter {
 					ClientMain.getServerConnector().logout();
 					MainWindow.this.connectItem.setEnabled(true);
 					MainWindow.this.disconnectItem.setEnabled(false);
+					MainWindow.this.refreshItem.setEnabled(false);
+					MainWindow.this.emptyTable();
+					ClientMain.resetServerConnection();
 				} catch (IOException e1) {
 					JOptionPane.showMessageDialog(MainWindow.this,
 							e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -151,13 +155,32 @@ public class MainWindow extends JFrame implements DataPresenter {
 		uploadItem.setEnabled(false);
 
 		refreshItem = new JMenuItem("Refresh list");
+		refreshItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				ServerConnector sc = ClientMain.getServerConnector();
+				if (sc != null) {
+					try {
+						MainWindow.this.giveFileList(sc.getFileList());
+					} catch (IOException e1) {
+						JOptionPane.showMessageDialog(MainWindow.this,
+								e1.getMessage(), "Error",
+								JOptionPane.ERROR_MESSAGE);
+					} catch (HTTPException e1) {
+						JOptionPane.showMessageDialog(MainWindow.this,
+								e1.getHTTPErrorMessage(), e1.getHTTPCode()
+										+ ": Error", JOptionPane.ERROR_MESSAGE);
+					}
+				}
+			}
+		});
 		refreshItem.setEnabled(false);
 
 		menuBar.add(fileMenu);
 		menuBar.add(uploadItem);
 		menuBar.add(refreshItem);
 
-		String[][] content = new String[][] { { "name", "path", "date" } };
+		String[][] content = new String[][] { { "", "", "" } };
 
 		DefaultTableModel model = new DefaultTableModel(content, HEADINGS);
 		table = new JTable(model) {
@@ -196,7 +219,7 @@ public class MainWindow extends JFrame implements DataPresenter {
 		String[][] data = new String[fileList.size()][3];
 		for (int i = 0; i < fileList.size(); i++) {
 			CloudFile cf = fileList.get(i);
-			String[] d = new String[] { cf.getName(), cf.getPath(),
+			String[] d = new String[] { cf.getName(), cf.getState(),
 					new Date(cf.getLastMod()).toString() };
 			data[i] = d;
 		}

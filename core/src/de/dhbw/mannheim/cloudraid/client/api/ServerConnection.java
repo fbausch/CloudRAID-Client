@@ -39,6 +39,9 @@ public class ServerConnection {
 
 	public ServerConnection(String server, String user, String password,
 			short port) throws MalformedURLException {
+		if (!server.startsWith("http://")) {
+			server = "http://" + server;
+		}
 		new URL(server + ":" + port); // Test, if server and port are valid
 		this.server = server;
 		this.port = port;

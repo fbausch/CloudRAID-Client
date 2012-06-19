@@ -22,23 +22,23 @@
 
 package de.dhbw.mannheim.cloudraid.client.api;
 
-
 public class CloudFile {
 
-	private String path, name;
+	private String name, state, hashedName;
 	private long lastMod;
 	private ServerConnector sc;
 
-	protected CloudFile(ServerConnector sc, String path, String name,
-			long lastMod) {
+	protected CloudFile(ServerConnector sc, String name, String state,
+			long lastMod, String hashedName) {
 		this.sc = sc;
-		this.path = path;
 		this.name = name;
 		this.lastMod = lastMod;
+		this.state = state;
+		this.hashedName = hashedName;
 	}
 
-	public String getPath() {
-		return path;
+	public String getState() {
+		return state;
 	}
 
 	public String getName() {
@@ -47,6 +47,10 @@ public class CloudFile {
 
 	public long getLastMod() {
 		return lastMod;
+	}
+
+	public String getHashedName() {
+		return hashedName;
 	}
 
 	public ServerConnector getSc() {
