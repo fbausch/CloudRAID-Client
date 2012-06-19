@@ -103,9 +103,7 @@ public class ServerConnector {
 	public void login() throws IOException, HTTPException {
 		HttpURLConnection con = (HttpURLConnection) sc.getURL("/user/auth/")
 				.openConnection();
-
 		con.setRequestMethod(POST);
-
 		con.setRequestProperty(USER, sc.getUser());
 		con.setRequestProperty(PASSW, sc.getPassword());
 		con.connect();
