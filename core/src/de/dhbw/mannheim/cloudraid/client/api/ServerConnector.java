@@ -48,8 +48,8 @@ public class ServerConnector {
 	private static final String SET_COOKIE = "Set-Cookie", COOKIE = "Cookie";
 	private static final String HTTP401 = "not logged in",
 			HTTP404 = "file not found", HTTP405 = "session not transmitted",
-			HTTP406 = "already logged in", HTTP503 = "session does not exist",
-			HTTP_UNKNOWN = "unknown error";
+			HTTP406 = "already logged in", HTTP411 = "content-length required",
+			HTTP503 = "session does not exist", HTTP_UNKNOWN = "unknown error";
 
 	private ServerConnection sc;
 	private String session = null;
@@ -87,7 +87,12 @@ public class ServerConnector {
 			switch (con.getResponseCode()) {
 			case 202:
 				System.out.println("login: success");
-				session = con.getHeaderField(SET_COOKIE);
+				for (String s :con.getHeaderField(SET_COOKIE).split(";")){
+					if (s.startsWith("JSESSIONID=")) {
+						session = s;
+					}
+				}
+				System.out.println(session);
 				break;
 			case 400:
 				throw new HTTPException(400, "login: pw/user wrong");
@@ -243,6 +248,8 @@ public class ServerConnector {
 				throw new HTTPException(404, "put: " + HTTP404);
 			case 405:
 				throw new HTTPException(405, "put: " + HTTP405);
+			case 411:
+				throw new HTTPException(411, "put: " + HTTP411);
 			case 503:
 				throw new HTTPException(503, "put: " + HTTP503);
 			default:

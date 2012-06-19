@@ -48,7 +48,8 @@ public class MainWindow extends JFrame implements DataPresenter {
 
 	private JMenuBar menuBar;
 	private JMenu fileMenu;
-	private JMenuItem connectItem, closeItem, uploadItem, refreshItem;
+	private JMenuItem connectItem, disconnectItem, closeItem, uploadItem,
+			refreshItem;
 	private JTable table;
 	private JScrollPane scrollPane;
 	private static final String[] HEADINGS = new String[] { "Name", "Path",
@@ -84,23 +85,37 @@ public class MainWindow extends JFrame implements DataPresenter {
 					} catch (HTTPException e1) {
 						JOptionPane.showMessageDialog(MainWindow.this,
 								e1.getHTTPErrorMessage(), e1.getHTTPCode()
-										+ ": Error", ERROR);
+										+ ": Error", JOptionPane.ERROR_MESSAGE);
 					}
-
 				}
 				MainWindow.this.emptyTable();
 				if (fileList != null) {
-					String[][] data = new String[fileList.size()][3];
-					for (int i = 0; i < fileList.size(); i++) {
-						CloudFile cf = fileList.get(i);
-						String[] d = new String[] { cf.getName(), cf.getPath(),
-								new Date(cf.getLastMod()).toString() };
-						data[i] = d;
-					}
-					MainWindow.this.giveFileList(data);
+					MainWindow.this.giveFileList(fileList);
+					MainWindow.this.connectItem.setEnabled(false);
+					MainWindow.this.disconnectItem.setEnabled(true);
 				}
 			}
 		});
+
+		disconnectItem = new JMenuItem("Disconnect...");
+		disconnectItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					ClientMain.getServerConnector().logout();
+					MainWindow.this.connectItem.setEnabled(true);
+					MainWindow.this.disconnectItem.setEnabled(false);
+				} catch (IOException e1) {
+					JOptionPane.showMessageDialog(MainWindow.this,
+							e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+				} catch (HTTPException e1) {
+					JOptionPane.showMessageDialog(MainWindow.this,
+							e1.getHTTPErrorMessage(), e1.getHTTPCode()
+									+ ": Error", JOptionPane.ERROR_MESSAGE);
+				}
+			}
+		});
+		disconnectItem.setEnabled(false);
 
 		closeItem = new JMenuItem("Close");
 		closeItem.addActionListener(new ActionListener() {
@@ -129,6 +144,7 @@ public class MainWindow extends JFrame implements DataPresenter {
 		});
 
 		fileMenu.add(connectItem);
+		fileMenu.add(disconnectItem);
 		fileMenu.add(closeItem);
 
 		uploadItem = new JMenuItem("Upload a file");
@@ -176,8 +192,15 @@ public class MainWindow extends JFrame implements DataPresenter {
 	}
 
 	@Override
-	public void giveFileList(Object[][] fileList) {
-		this.refreshTable(fileList);
+	public void giveFileList(ArrayList<CloudFile> fileList) {
+		String[][] data = new String[fileList.size()][3];
+		for (int i = 0; i < fileList.size(); i++) {
+			CloudFile cf = fileList.get(i);
+			String[] d = new String[] { cf.getName(), cf.getPath(),
+					new Date(cf.getLastMod()).toString() };
+			data[i] = d;
+		}
+		this.refreshTable(data);
 	}
 
 }

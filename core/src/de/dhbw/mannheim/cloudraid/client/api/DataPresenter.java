@@ -22,8 +22,10 @@
 
 package de.dhbw.mannheim.cloudraid.client.api;
 
+import java.util.ArrayList;
+
 public interface DataPresenter {
-	
-	public void giveFileList(Object[][] fileList);
+
+	public void giveFileList(ArrayList<CloudFile> fileList);
 
 }
