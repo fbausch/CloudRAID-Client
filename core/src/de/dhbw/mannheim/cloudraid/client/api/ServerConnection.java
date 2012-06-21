@@ -66,6 +66,14 @@ public class ServerConnection {
 		return this.password;
 	}
 
+	protected String getServer() {
+		return this.server;
+	}
+
+	protected short getPort() {
+		return this.port;
+	}
+
 	public String toString() {
 		return user + ":" + password + "@" + server + ":" + port;
 	}
