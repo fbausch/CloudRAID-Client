@@ -35,6 +35,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Vector;
 
 /**
  * Manages the connection to a CloudRAID server.
@@ -52,8 +53,7 @@ public class ServerConnector {
 	private static final String GET = "GET", POST = "POST", DELETE = "DELETE",
 			PUT = "PUT";
 	private static final String USER = "X-Username", PASSW = "X-Password",
-			CONTENT_LENGTH = "Content-Length"
-			/* , CONFIRM = "X-Confirm" */;
+			CONTENT_LENGTH = "Content-Length", CONFIRM = "X-Confirm";
 	private static final String SET_COOKIE = "Set-Cookie", COOKIE = "Cookie";
 	private static final String HTTP401 = "not logged in",
 			HTTP404 = "file not found", HTTP405 = "session not transmitted",
@@ -64,7 +64,7 @@ public class ServerConnector {
 	private ServerConnection sc;
 	private String session = null;
 
-	private ArrayList<DataPresenter> dataPresenters = new ArrayList<DataPresenter>();
+	private Vector<DataPresenter> dataPresenters = new Vector<DataPresenter>();
 
 	/**
 	 * Creates a {@link ServerConnector} basing on the credentials in a
@@ -118,8 +118,8 @@ public class ServerConnector {
 				}
 				System.out.println(session);
 				break;
-			case 400:
-				throw new HTTPException(400, "login: pw/user wrong");
+			case 403:
+				throw new HTTPException(403, "login: pw/user wrong");
 			case 406:
 				throw new HTTPException(406, "login: " + HTTP406);
 			case 503:
@@ -347,8 +347,8 @@ public class ServerConnector {
 	 * @throws IOException
 	 * @throws HTTPException
 	 */
-	public ArrayList<CloudFile> getFileList() throws IOException, HTTPException {
-		ArrayList<CloudFile> ret = new ArrayList<CloudFile>();
+	public Vector<CloudFile> getFileList() throws IOException, HTTPException {
+		Vector<CloudFile> ret = new Vector<CloudFile>();
 		BufferedReader br = null;
 		HttpURLConnection con = (HttpURLConnection) sc.getURL("/list/")
 				.openConnection();
@@ -416,6 +416,44 @@ public class ServerConnector {
 	}
 
 	/**
+	 * Sends the request for the creation of a new user to the server.
+	 * 
+	 * @param conf
+	 *            The confirmation of the password in the constructor's
+	 *            {@link ServerConnection}.
+	 * @throws IOException
+	 * @throws HTTPException
+	 */
+	public void createUser(String conf) throws IOException, HTTPException {
+		HttpURLConnection con = (HttpURLConnection) sc.getURL("/user/add/")
+				.openConnection();
+		con.setRequestMethod(POST);
+		con.setRequestProperty(USER, sc.getUser());
+		con.setRequestProperty(PASSW, sc.getPassword());
+		con.setRequestProperty(CONFIRM, conf);
+		con.connect();
+		try {
+			switch (con.getResponseCode()) {
+			case 200:
+				System.out.println("createUser: successful");
+				break;
+			case 400:
+				throw new HTTPException(400,
+						"user name and/or password and/or confirmation missing/wrong");
+			case 406:
+				throw new HTTPException(406, HTTP406);
+			case 500:
+				throw new HTTPException(500,
+						"error while adding user to database");
+			default:
+				throw new HTTPException(con.getResponseCode(), HTTP_UNKNOWN);
+			}
+		} finally {
+			con.disconnect();
+		}
+	}
+
+	/**
 	 * Registers a {@link DataPresenter} with this {@link ServerConnector}.
 	 * 
 	 * @param dp
@@ -423,5 +461,9 @@ public class ServerConnector {
 	 */
 	public void registerDataPresenter(DataPresenter dp) {
 		this.dataPresenters.add(dp);
+	}
+
+	public String toString() {
+		return "ServerConnection: " + this.sc + ". Stored session: " + session;
 	}
 }

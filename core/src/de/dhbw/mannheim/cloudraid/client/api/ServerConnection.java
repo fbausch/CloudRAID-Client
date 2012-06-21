@@ -49,7 +49,7 @@ public class ServerConnection {
 		this.password = password;
 	}
 
-	public URL getURL(String path) {
+	protected URL getURL(String path) {
 		try {
 			return new URL(server + ":" + port + path);
 		} catch (MalformedURLException e) {
@@ -58,11 +58,15 @@ public class ServerConnection {
 		}
 	}
 
-	public String getUser() {
+	protected String getUser() {
 		return this.user;
 	}
 
-	public String getPassword() {
+	protected String getPassword() {
 		return this.password;
+	}
+
+	public String toString() {
+		return user + ":" + password + "@" + server + ":" + port;
 	}
 }

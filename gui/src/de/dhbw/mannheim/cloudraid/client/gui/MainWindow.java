@@ -33,8 +33,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Date;
+import java.util.Vector;
 
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -59,13 +59,13 @@ public class MainWindow extends JFrame implements DataPresenter {
 	private JMenuBar menuBar;
 	private JMenu fileMenu;
 	private JMenuItem connectItem, disconnectItem, closeItem, uploadItem,
-			refreshItem, deleteItem, downloadItem;
+			refreshItem, deleteItem, downloadItem, userCreationItem;
 	private JTable table;
 	private JPopupMenu popup;
 	private JScrollPane scrollPane;
-	private String clickedPath;
+	private CloudFile clickedCloudFile;
 	private static final String[] HEADINGS = new String[] { "Name", "State",
-			"Date" };
+			"Date", "File" };
 
 	public MainWindow() {
 		super("CloudRAID Client GUI");
@@ -85,10 +85,10 @@ public class MainWindow extends JFrame implements DataPresenter {
 			public void actionPerformed(ActionEvent e) {
 				ServerConnector sc = ClientMain.getServerConnector();
 				if (sc != null) {
-					System.out.println("delete: " + clickedPath);
+					System.out.println("delete: " + clickedCloudFile);
 					try {
-						sc.deleteFile(clickedPath);
-						MainWindow.this.giveFileList(sc.getFileList());
+						clickedCloudFile.delete();
+						sc.getFileList();
 					} catch (IOException e1) {
 						MainWindow.this.showError(e1);
 					} catch (HTTPException e1) {
@@ -101,14 +101,19 @@ public class MainWindow extends JFrame implements DataPresenter {
 		downloadItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				JFileChooser fc = new JFileChooser();
+				int state = fc.showSaveDialog(MainWindow.this);
+				if (state != JFileChooser.APPROVE_OPTION) {
+					return;
+				}
 				ServerConnector sc = ClientMain.getServerConnector();
 				if (sc != null) {
-					System.out.println("download: " + clickedPath);
+					System.out.println("download: " + clickedCloudFile);
 					try {
-						File f = sc.getFile(clickedPath);
-						System.out.println(new File(clickedPath)
+						File f = clickedCloudFile.download();
+						System.out.println(fc.getSelectedFile()
 								.getAbsolutePath());
-						MainWindow.this.fileCopy(f, new File(clickedPath));
+						MainWindow.this.fileCopy(f, fc.getSelectedFile());
 						f.delete();
 					} catch (IOException e1) {
 						MainWindow.this.showError(e1);
@@ -131,24 +136,55 @@ public class MainWindow extends JFrame implements DataPresenter {
 		connectItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				MainWindow.this.emptyTable();
 				ClientMain.resetServerConnection();
-				ArrayList<CloudFile> fileList = null;
 				new ConnectionDialog(MainWindow.this);
 				ServerConnector sc = ClientMain.getServerConnector();
 				if (sc != null) {
 					try {
 						sc.login();
-						fileList = sc.getFileList();
+						MainWindow.this.deActivateComponents(true);
+					} catch (IOException e1) {
+						MainWindow.this.showError(e1);
+						ClientMain.resetServerConnection();
+						return;
+					} catch (HTTPException e1) {
+						MainWindow.this.showError(e1);
+						ClientMain.resetServerConnection();
+						return;
+					}
+					try {
+						sc.getFileList();
 					} catch (IOException e1) {
 						MainWindow.this.showError(e1);
 					} catch (HTTPException e1) {
 						MainWindow.this.showError(e1);
 					}
 				}
+			}
+		});
+
+		userCreationItem = new JMenuItem("Create user");
+		userCreationItem.setMnemonic('u');
+		userCreationItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
 				MainWindow.this.emptyTable();
-				if (fileList != null) {
-					// MainWindow.this.giveFileList(fileList);
-					MainWindow.this.deActivateComponents(true);
+				ClientMain.resetServerConnection();
+				UserCreationDialog ucd = new UserCreationDialog(MainWindow.this);
+				ServerConnector sc = ClientMain.getServerConnector();
+				if (sc != null) {
+					try {
+						sc.createUser(ucd.getPasswordConfirmation());
+					} catch (IOException e1) {
+						MainWindow.this.showError(e1);
+						ClientMain.resetServerConnection();
+						return;
+					} catch (HTTPException e1) {
+						MainWindow.this.showError(e1);
+						ClientMain.resetServerConnection();
+						return;
+					}
 				}
 			}
 		});
@@ -182,6 +218,7 @@ public class MainWindow extends JFrame implements DataPresenter {
 		});
 
 		fileMenu.add(connectItem);
+		fileMenu.add(userCreationItem);
 		fileMenu.add(disconnectItem);
 		fileMenu.add(closeItem);
 
@@ -197,7 +234,7 @@ public class MainWindow extends JFrame implements DataPresenter {
 					try {
 						sc.putFile(fc.getSelectedFile().getName(),
 								fc.getSelectedFile(), false);
-						MainWindow.this.giveFileList(sc.getFileList());
+						sc.getFileList();
 					} catch (IOException e1) {
 						MainWindow.this.showError(e1);
 					} catch (HTTPException e1) {
@@ -205,7 +242,7 @@ public class MainWindow extends JFrame implements DataPresenter {
 							try {
 								sc.putFile(fc.getSelectedFile().getName(),
 										fc.getSelectedFile(), true);
-								MainWindow.this.giveFileList(sc.getFileList());
+								sc.getFileList();
 							} catch (IOException e2) {
 								MainWindow.this.showError(e2);
 							} catch (HTTPException e2) {
@@ -228,7 +265,7 @@ public class MainWindow extends JFrame implements DataPresenter {
 				ServerConnector sc = ClientMain.getServerConnector();
 				if (sc != null) {
 					try {
-						MainWindow.this.giveFileList(sc.getFileList());
+						sc.getFileList();
 					} catch (IOException e1) {
 						MainWindow.this.showError(e1);
 					} catch (HTTPException e1) {
@@ -243,7 +280,7 @@ public class MainWindow extends JFrame implements DataPresenter {
 		menuBar.add(uploadItem);
 		menuBar.add(refreshItem);
 
-		String[][] content = new String[][] { { "", "", "" } };
+		Object[][] content = new Object[][] { { "", "", "", "" } };
 
 		DefaultTableModel model = new DefaultTableModel(content, HEADINGS);
 		table = new JTable(model) {
@@ -253,6 +290,7 @@ public class MainWindow extends JFrame implements DataPresenter {
 				return false; // Disallow the editing of any cell
 			}
 		};
+		table.removeColumn(table.getColumnModel().getColumn(3));
 		table.addMouseListener(new MouseListener() {
 			@Override
 			public void mouseReleased(MouseEvent e) {
@@ -279,12 +317,12 @@ public class MainWindow extends JFrame implements DataPresenter {
 				if (row < 0) {
 					return;
 				}
-				String path = (String) MainWindow.this.table.getModel()
-						.getValueAt(row, 0);
-				if ("".equals(path)) {
+				CloudFile file = (CloudFile) MainWindow.this.table.getModel()
+						.getValueAt(row, 3);
+				if ("".equals(file)) {
 					return;
 				}
-				MainWindow.this.clickedPath = path;
+				MainWindow.this.clickedCloudFile = file;
 				MainWindow.this.popup.show(e.getComponent(), e.getX(), e.getY());
 			}
 		});
@@ -305,7 +343,7 @@ public class MainWindow extends JFrame implements DataPresenter {
 	 * Removes all data from the table containing the file list.
 	 */
 	private void emptyTable() {
-		this.refreshTable(new String[][] { { "", "", "" } });
+		this.refreshTable(new Object[][] { { "", "", "", "" } });
 	}
 
 	/**
@@ -317,16 +355,20 @@ public class MainWindow extends JFrame implements DataPresenter {
 	private void refreshTable(Object[][] newContent) {
 		DefaultTableModel model = new DefaultTableModel(newContent, HEADINGS);
 		table.setModel(model);
+		this.table.removeColumn(this.table.getColumnModel().getColumn(3));
 	}
 
 	@Override
-	public void giveFileList(ArrayList<CloudFile> fileList) {
-		String[][] data = new String[fileList.size()][3];
-		for (int i = 0; i < fileList.size(); i++) {
-			CloudFile cf = fileList.get(i);
-			String[] d = new String[] { cf.getName(), cf.getState(),
-					new Date(cf.getLastMod()).toString() };
-			data[i] = d;
+	public void giveFileList(Vector<CloudFile> fileList) {
+		Object[][] data = new Object[fileList.size()][4];
+		int i = 0;
+		for (CloudFile cf : fileList) {
+			Object[] d = new Object[] {
+					cf.getName(),
+					cf.getState(),
+					ServerConnector.CLOUDRAID_DATE_FORMAT.format(new Date(cf
+							.getLastMod())), cf };
+			data[i++] = d;
 		}
 		this.refreshTable(data);
 	}
@@ -408,8 +450,9 @@ public class MainWindow extends JFrame implements DataPresenter {
 	 *            The {@link HTTPException}.
 	 */
 	private void showError(HTTPException e) {
-		JOptionPane.showMessageDialog(this, e.getHTTPErrorMessage(),
-				e.getHTTPCode() + ": Error", JOptionPane.ERROR_MESSAGE);
+		JOptionPane.showMessageDialog(this,
+				e.getHTTPCode() + ": " + e.getHTTPErrorMessage(),
+				"Error " + e.getHTTPCode(), JOptionPane.ERROR_MESSAGE);
 	}
 
 	/**
@@ -424,5 +467,6 @@ public class MainWindow extends JFrame implements DataPresenter {
 		this.disconnectItem.setEnabled(loggedIn);
 		this.refreshItem.setEnabled(loggedIn);
 		this.uploadItem.setEnabled(loggedIn);
+		this.userCreationItem.setEnabled(!loggedIn);
 	}
 }
