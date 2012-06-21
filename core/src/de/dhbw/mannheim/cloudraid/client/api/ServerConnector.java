@@ -162,14 +162,17 @@ public class ServerConnector {
 		try {
 			switch (con.getResponseCode()) {
 			case 200:
+				removeSession();
 				System.out.println("logout: success");
 				break;
 			case 401:
+				removeSession();
 				throw new HTTPException(401, "logout: " + HTTP401);
 			case 405:
 				resetSession = false;
 				throw new HTTPException(405, "logout: " + HTTP405);
 			case 503:
+				removeSession();
 				throw new HTTPException(503, "logout: " + HTTP503);
 			default:
 				resetSession = false;
@@ -515,6 +518,13 @@ public class ServerConnector {
 
 	private void setSession(String session) {
 		this.session = session;
+	}
+	
+	private void removeSession() {
+		File sessionFile = new File(CLOUDRAID_HOME + "session");
+		if (sessionFile.exists()) {
+			sessionFile.delete();
+		}
 	}
 
 	/**
