@@ -130,6 +130,50 @@ public class CLIMain {
 				System.exit(2);
 			}
 		}
+		// Check for upload of file
+		if ("put".equals(args[0])) {
+			if (args.length == 3) {
+				File f = new File(args[1]);
+				if (!f.exists()) {
+					System.err.println("File does not exist.");
+					System.exit(5);
+				}
+				try {
+					sc.putFile(args[2], f, false);
+				} catch (IOException e) {
+					System.err.println("Could not upload your file.");
+					System.exit(6);
+				} catch (HTTPException e) {
+					System.err.println("Error " + e.getHTTPCode() + ": "
+							+ e.getHTTPErrorMessage());
+				}
+			} else {
+				System.err.println("Wrong number of arguments.");
+				System.exit(2);
+			}
+		}
+		// Check for update of file
+		if ("update".equals(args[0])) {
+			if (args.length == 3) {
+				File f = new File(args[1]);
+				if (!f.exists()) {
+					System.err.println("File does not exist.");
+					System.exit(5);
+				}
+				try {
+					sc.putFile(args[2], f, true);
+				} catch (IOException e) {
+					System.err.println("Could not upload your file.");
+					System.exit(6);
+				} catch (HTTPException e) {
+					System.err.println("Error " + e.getHTTPCode() + ": "
+							+ e.getHTTPErrorMessage());
+				}
+			} else {
+				System.err.println("Wrong number of arguments.");
+				System.exit(2);
+			}
+		}
 	}
 
 }
