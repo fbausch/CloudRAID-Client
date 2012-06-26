@@ -20,12 +20,27 @@
  * under the License.
  */
 
-package de.dhbw.mannheim.cloudraid.client.api;
+package de.dhbw_mannheim.cloudraid.client.api;
 
-import java.util.Vector;
+public class HTTPException extends Exception {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 8800170061168765042L;
 
-public interface DataPresenter {
+	private int code;
+	private String msg;
 
-	public void giveFileList(Vector<CloudFile> fileList);
+	protected HTTPException(int code, String msg) {
+		this.code = code;
+		this.msg = msg;
+	}
 
+	public int getHTTPCode() {
+		return code;
+	}
+
+	public String getHTTPErrorMessage() {
+		return msg;
+	}
 }

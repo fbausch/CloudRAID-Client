@@ -20,7 +20,7 @@
  * under the License.
  */
 
-package de.dhbw.mannheim.cloudraid.client.gui;
+package de.dhbw_mannheim.cloudraid.client.gui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -47,10 +47,10 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
-import de.dhbw.mannheim.cloudraid.client.api.CloudFile;
-import de.dhbw.mannheim.cloudraid.client.api.DataPresenter;
-import de.dhbw.mannheim.cloudraid.client.api.HTTPException;
-import de.dhbw.mannheim.cloudraid.client.api.ServerConnector;
+import de.dhbw_mannheim.cloudraid.client.api.CloudFile;
+import de.dhbw_mannheim.cloudraid.client.api.DataPresenter;
+import de.dhbw_mannheim.cloudraid.client.api.HTTPException;
+import de.dhbw_mannheim.cloudraid.client.api.ServerConnector;
 
 public class MainWindow extends JFrame implements DataPresenter {
 

@@ -20,7 +20,7 @@
  * under the License.
  */
 
-package de.dhbw.mannheim.cloudraid.client.api;
+package de.dhbw_mannheim.cloudraid.client.api;
 
 import java.net.MalformedURLException;
 import java.net.URL;

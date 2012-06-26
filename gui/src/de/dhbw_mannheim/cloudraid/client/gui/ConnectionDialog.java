@@ -20,7 +20,7 @@
  * under the License.
  */
 
-package de.dhbw.mannheim.cloudraid.client.gui;
+package de.dhbw_mannheim.cloudraid.client.gui;
 
 import java.awt.Dimension;
 import java.awt.GridLayout;
@@ -41,9 +41,9 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
-import de.dhbw.mannheim.cloudraid.client.api.ServerConnection;
+import de.dhbw_mannheim.cloudraid.client.api.ServerConnection;
 
-public class UserCreationDialog extends JDialog {
+public class ConnectionDialog extends JDialog {
 
 	/**
 	 * 
@@ -52,21 +52,21 @@ public class UserCreationDialog extends JDialog {
 
 	private JButton connectButton, abortButton;
 	private JTextField hostAddress, portNumber, userName;
-	private JPasswordField passWord, confirmation;
+	private JPasswordField passWord;
 	private JLabel hostAddressLabel, portNumberLabel, userNameLabel,
-			passWordLabel, confirmationLabel;
+			passWordLabel;
 
 	private KeyListener returnKeyListener = new KeyListener() {
 		@Override
 		public void keyPressed(KeyEvent e) {
 			if (e.getKeyCode() == KeyEvent.VK_ENTER) {
 				if (e.getSource() != abortButton) {
-					UserCreationDialog.this.connect();
+					ConnectionDialog.this.connect();
 				} else {
-					UserCreationDialog.this.abort();
+					ConnectionDialog.this.abort();
 				}
 			} else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-				UserCreationDialog.this.abort();
+				ConnectionDialog.this.abort();
 			}
 		}
 
@@ -79,25 +79,25 @@ public class UserCreationDialog extends JDialog {
 		}
 	};
 
-	public UserCreationDialog(MainWindow parent) {
-		super(parent, "User Creation");
+	public ConnectionDialog(MainWindow parent) {
+		super(parent, "Connection");
 		this.setModalityType(ModalityType.APPLICATION_MODAL);
 		this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		this.setResizable(false);
 		JPanel panel = new JPanel();
-		panel.setLayout(new GridLayout(6, 2, 10, 10));
+		panel.setLayout(new GridLayout(5, 2, 10, 10));
 		panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
 		/**
 		 * connect button
 		 */
-		connectButton = new JButton("Create");
+		connectButton = new JButton("Connect");
 		connectButton.addKeyListener(returnKeyListener);
 		connectButton.setPreferredSize(new Dimension(150, 30));
 		connectButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				UserCreationDialog.this.connect();
+				ConnectionDialog.this.connect();
 			}
 		});
 
@@ -110,7 +110,7 @@ public class UserCreationDialog extends JDialog {
 		abortButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				UserCreationDialog.this.abort();
+				ConnectionDialog.this.abort();
 			}
 		});
 
@@ -124,12 +124,12 @@ public class UserCreationDialog extends JDialog {
 		hostAddress.addFocusListener(new FocusListener() {
 			@Override
 			public void focusGained(FocusEvent arg0) {
-				UserCreationDialog.this.hostAddress.selectAll();
+				ConnectionDialog.this.hostAddress.selectAll();
 			}
 
 			@Override
 			public void focusLost(FocusEvent e) {
-				UserCreationDialog.this.hostAddress.select(0, 0);
+				ConnectionDialog.this.hostAddress.select(0, 0);
 			}
 		});
 
@@ -143,12 +143,12 @@ public class UserCreationDialog extends JDialog {
 		portNumber.addFocusListener(new FocusListener() {
 			@Override
 			public void focusGained(FocusEvent arg0) {
-				UserCreationDialog.this.portNumber.selectAll();
+				ConnectionDialog.this.portNumber.selectAll();
 			}
 
 			@Override
 			public void focusLost(FocusEvent e) {
-				UserCreationDialog.this.portNumber.select(0, 0);
+				ConnectionDialog.this.portNumber.select(0, 0);
 			}
 		});
 
@@ -162,12 +162,12 @@ public class UserCreationDialog extends JDialog {
 		userName.addFocusListener(new FocusListener() {
 			@Override
 			public void focusGained(FocusEvent arg0) {
-				UserCreationDialog.this.userName.selectAll();
+				ConnectionDialog.this.userName.selectAll();
 			}
 
 			@Override
 			public void focusLost(FocusEvent e) {
-				UserCreationDialog.this.userName.select(0, 0);
+				ConnectionDialog.this.userName.select(0, 0);
 			}
 		});
 
@@ -198,48 +198,12 @@ public class UserCreationDialog extends JDialog {
 		passWord.addFocusListener(new FocusListener() {
 			@Override
 			public void focusGained(FocusEvent arg0) {
-				UserCreationDialog.this.passWord.selectAll();
+				ConnectionDialog.this.passWord.selectAll();
 			}
 
 			@Override
 			public void focusLost(FocusEvent e) {
-				UserCreationDialog.this.passWord.select(0, 0);
-			}
-		});
-
-		/**
-		 * password confirmation field
-		 */
-		confirmationLabel = new JLabel("Password");
-		confirmationLabel.setLabelFor(confirmation);
-		confirmation = new JPasswordField("wxyz");
-		confirmation.addKeyListener(returnKeyListener);
-		confirmation.addKeyListener(new KeyListener() {
-			@Override
-			public void keyPressed(KeyEvent e) {
-				if (e.getKeyCode() == KeyEvent.VK_BACK_SPACE
-						&& e.isControlDown()) {
-					confirmation.setText("");
-				}
-			}
-
-			@Override
-			public void keyReleased(KeyEvent e) {
-			}
-
-			@Override
-			public void keyTyped(KeyEvent e) {
-			}
-		});
-		confirmation.addFocusListener(new FocusListener() {
-			@Override
-			public void focusGained(FocusEvent arg0) {
-				UserCreationDialog.this.confirmation.selectAll();
-			}
-
-			@Override
-			public void focusLost(FocusEvent e) {
-				UserCreationDialog.this.confirmation.select(0, 0);
+				ConnectionDialog.this.passWord.select(0, 0);
 			}
 		});
 
@@ -251,8 +215,6 @@ public class UserCreationDialog extends JDialog {
 		panel.add(userName);
 		panel.add(passWordLabel);
 		panel.add(passWord);
-		panel.add(confirmationLabel);
-		panel.add(confirmation);
 		panel.add(connectButton);
 		panel.add(abortButton);
 
@@ -279,11 +241,6 @@ public class UserCreationDialog extends JDialog {
 					.showMessageDialog(this, "The port number is incorrect.");
 			return;
 		}
-		if (!String.valueOf(this.passWord.getPassword()).equals(
-				String.valueOf(this.confirmation.getPassword()))) {
-			JOptionPane.showMessageDialog(this, "The passwords are not equal.");
-			return;
-		}
 		try {
 			sc = new ServerConnection(this.hostAddress.getText(),
 					this.userName.getText(), String.valueOf(this.passWord
@@ -297,12 +254,4 @@ public class UserCreationDialog extends JDialog {
 		this.dispose();
 	}
 
-	/**
-	 * Returns the content of the password confirmation field.
-	 * 
-	 * @return The password confirmation to be sent to the CloudRAID server.
-	 */
-	public String getPasswordConfirmation() {
-		return String.valueOf(this.confirmation.getPassword());
-	}
 }

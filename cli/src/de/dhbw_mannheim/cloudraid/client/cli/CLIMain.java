@@ -1,4 +1,4 @@
-package de.dhbw.mannheim.cloudraid.client.cli;
+package de.dhbw_mannheim.cloudraid.client.cli;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -7,10 +7,10 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.util.Vector;
 
-import de.dhbw.mannheim.cloudraid.client.api.CloudFile;
-import de.dhbw.mannheim.cloudraid.client.api.HTTPException;
-import de.dhbw.mannheim.cloudraid.client.api.ServerConnection;
-import de.dhbw.mannheim.cloudraid.client.api.ServerConnector;
+import de.dhbw_mannheim.cloudraid.client.api.CloudFile;
+import de.dhbw_mannheim.cloudraid.client.api.HTTPException;
+import de.dhbw_mannheim.cloudraid.client.api.ServerConnection;
+import de.dhbw_mannheim.cloudraid.client.api.ServerConnector;
 
 public class CLIMain {
 
