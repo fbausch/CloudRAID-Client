@@ -68,18 +68,15 @@ public class CLIMain {
 					System.exit(0);
 				} catch (NumberFormatException e) {
 					System.err.println("Invalid port number.");
-					System.exit(7);
 				} catch (MalformedURLException e) {
 					System.err.println("Invalid URL.");
-					System.exit(7);
 				} catch (IOException e) {
 					System.err.println("Could not log in.");
-					System.exit(7);
 				} catch (HTTPException e) {
 					System.err.println("Error " + e.getHTTPCode() + ": "
 							+ e.getHTTPErrorMessage());
-					System.exit(7);
 				}
+				System.exit(7);
 			} else {
 				System.err.println("Wrong number of arguments.");
 				System.exit(2);
