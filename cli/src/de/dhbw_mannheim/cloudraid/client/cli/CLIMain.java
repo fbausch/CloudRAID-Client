@@ -35,8 +35,23 @@ import de.dhbw_mannheim.cloudraid.client.api.HTTPException;
 import de.dhbw_mannheim.cloudraid.client.api.ServerConnection;
 import de.dhbw_mannheim.cloudraid.client.api.ServerConnector;
 
+/**
+ * A class using the CloudRAID-Client core to provide a command-line interface
+ * for the CloudRAID server application.
+ * 
+ * @author Florian Bausch
+ * 
+ */
 public class CLIMain {
 
+	/**
+	 * Executes depending on the command-line arguments different methods of
+	 * {@link ServerConnector}.
+	 * 
+	 * @param args
+	 *            The command-line arguments. See {@link #printUsage()} for the
+	 *            usage of the command-line arguments.
+	 */
 	public static void main(String[] args) {
 		// Check for arguments
 		if (args.length == 0) {
@@ -82,6 +97,7 @@ public class CLIMain {
 				System.exit(2);
 			}
 		}
+		// Try to restore the last session.
 		ServerConnector sc = ServerConnector.restoreSession();
 		if (sc == null) {
 			System.err.println("Session not found or corrupt.");
@@ -177,6 +193,9 @@ public class CLIMain {
 		}
 	}
 
+	/**
+	 * Prints the usage of this command-line client to stdout.
+	 */
 	private static void printUsage() {
 		System.err.flush();
 		System.out.println("Usage of CloudRAID command-line client:");
@@ -199,6 +218,17 @@ public class CLIMain {
 				.println("  - uploads _and_ overwrites a file on the server.\n");
 	}
 
+	/**
+	 * Executes the upload command and handles {@link Exception}s.
+	 * 
+	 * @param args
+	 *            The argument Array from the {@link #main(String[])} method.
+	 * @param update
+	 *            indicates, if new upload or update.
+	 * @param sc
+	 *            The {@link ServerConnector} holding the connection
+	 *            information.
+	 */
 	private static void upload(String[] args, boolean update, ServerConnector sc) {
 		if (args.length == 3) {
 			File f = new File(args[1]);

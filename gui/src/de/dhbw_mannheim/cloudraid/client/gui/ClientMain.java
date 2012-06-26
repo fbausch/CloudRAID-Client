@@ -22,11 +22,16 @@
 
 package de.dhbw_mannheim.cloudraid.client.gui;
 
-import java.net.MalformedURLException;
-
 import de.dhbw_mannheim.cloudraid.client.api.ServerConnection;
 import de.dhbw_mannheim.cloudraid.client.api.ServerConnector;
 
+/**
+ * A class using the CloudRAID-Client core to provide a graphical user interface
+ * for the CloudRAID server application.
+ * 
+ * @author Florian Bausch
+ * 
+ */
 public class ClientMain {
 
 	private static ServerConnection serverConnection = null;
@@ -72,8 +77,13 @@ public class ClientMain {
 		return ClientMain.serverConnector;
 	}
 
-	public static void main(String[] args) throws NumberFormatException,
-			MalformedURLException {
+	/**
+	 * The applications main method.
+	 * 
+	 * @param args
+	 *            The String array containing the command-line parameters.
+	 */
+	public static void main(String[] args) {
 		ClientMain.mainWindow = new MainWindow();
 	}
 
