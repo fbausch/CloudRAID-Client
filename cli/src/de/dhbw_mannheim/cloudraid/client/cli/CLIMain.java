@@ -119,7 +119,7 @@ public class CLIMain {
 		else if ("list".equals(args[0])) {
 			try {
 				Vector<CloudFile> cfs = sc.getFileList();
-				System.out.println("Files on CloudRaid server:");
+				System.out.println(cfs.size() + " files on CloudRaid server:");
 				for (CloudFile cf : cfs) {
 					System.out.println(cf.toString());
 				}
