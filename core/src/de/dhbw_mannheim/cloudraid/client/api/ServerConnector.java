@@ -79,7 +79,7 @@ public class ServerConnector {
 		BufferedReader br = null;
 		ServerConnector newCon = null;
 		try {
-			File sessionFile = new File(CLOUDRAID_HOME + "session");
+			File sessionFile = new File(CLOUDRAID_HOME + "/session");
 			br = new BufferedReader(new FileReader(sessionFile));
 			ServerConnection sc = new ServerConnection(br.readLine(),
 					br.readLine(), br.readLine(), Short.parseShort(br
@@ -570,7 +570,7 @@ public class ServerConnector {
 	 * Removes a stored session from the file system.
 	 */
 	private void removeSession() {
-		File sessionFile = new File(CLOUDRAID_HOME + "session");
+		File sessionFile = new File(CLOUDRAID_HOME + "/session");
 		if (sessionFile.exists()) {
 			sessionFile.delete();
 		}
@@ -595,7 +595,7 @@ public class ServerConnector {
 		}
 		BufferedWriter bw = null;
 		try {
-			File sessionFile = new File(CLOUDRAID_HOME + "session");
+			File sessionFile = new File(CLOUDRAID_HOME + "/session");
 			sessionFile.getParentFile().mkdirs();
 			bw = new BufferedWriter(new FileWriter(sessionFile));
 			bw.write(this.sc.getServer());

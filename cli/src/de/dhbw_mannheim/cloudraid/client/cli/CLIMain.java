@@ -185,6 +185,33 @@ public class CLIMain {
 		else if ("update".equals(args[0])) {
 			upload(args, true, sc);
 		}
+		// Check for up changing password
+		else if ("changepw".equals(args[0])) {
+			BufferedReader in = new BufferedReader(new InputStreamReader(
+					System.in));
+			try {
+				String pw, pw2;
+				Console c = System.console();
+				System.out.println("Enter new password:");
+				if (c == null) {
+					pw = in.readLine();
+				} else {
+					pw = String.valueOf(c.readPassword());
+				}
+				System.out.println("Confirm new password:");
+				if (c == null) {
+					pw2 = in.readLine();
+				} else {
+					pw2 = String.valueOf(c.readPassword());
+				}
+				sc.changePassword(pw, pw2);
+			} catch (IOException e) {
+				System.err.println("Could not change password.");
+			} catch (HTTPException e) {
+				System.err.println("Error " + e.getHTTPCode() + ": "
+						+ e.getHTTPErrorMessage());
+			}
+		}
 		// No known keyword given
 		else {
 			System.err.println("Unknown command.");
@@ -216,6 +243,9 @@ public class CLIMain {
 		System.out.println("* update <path_to_file> <filename>");
 		System.out
 				.println("  - uploads _and_ overwrites a file on the server.\n");
+		System.out.println("* changepw");
+		System.out
+				.println("  - changes the password for the user currently logged in.");
 	}
 
 	/**
