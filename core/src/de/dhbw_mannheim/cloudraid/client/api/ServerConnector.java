@@ -53,22 +53,6 @@ public class ServerConnector {
 	public static final SimpleDateFormat CLOUDRAID_DATE_FORMAT = new SimpleDateFormat(
 			"yyyy-MM-dd hh:mm:ss.S");
 
-	private static final String GET = "GET", POST = "POST", DELETE = "DELETE",
-			PUT = "PUT";
-	private static final String USER = "X-Username", PASSW = "X-Password",
-			CONTENT_LENGTH = "Content-Length", CONFIRM = "X-Confirm";
-	private static final String SET_COOKIE = "Set-Cookie", COOKIE = "Cookie";
-	private static final String HTTP401 = "not logged in",
-			HTTP404 = "file not found", HTTP405 = "session not transmitted",
-			HTTP406 = "already logged in", HTTP409 = "conflict",
-			HTTP411 = "content-length required",
-			HTTP503 = "session does not exist", HTTP_UNKNOWN = "unknown error";
-
-	private ServerConnection sc;
-	private String session = null;
-
-	private Vector<DataPresenter> dataPresenters = new Vector<DataPresenter>();
-
 	/**
 	 * The top-level path to the programs config.
 	 */
@@ -76,6 +60,61 @@ public class ServerConnector {
 			.contains("windows") ? System.getenv("APPDATA")
 			+ "\\cloudraid-client\\" : System.getProperty("user.home")
 			+ "/.config/cloudraid-client/";
+	private static final String GET = "GET", POST = "POST", DELETE = "DELETE",
+			PUT = "PUT";
+	private static final String HTTP401 = "not logged in",
+			HTTP404 = "file not found", HTTP405 = "session not transmitted",
+			HTTP406 = "already logged in", HTTP409 = "conflict",
+			HTTP411 = "content-length required",
+			HTTP503 = "session does not exist", HTTP_UNKNOWN = "unknown error";
+	private static final String SET_COOKIE = "Set-Cookie", COOKIE = "Cookie";
+
+	private static final String USER = "X-Username", PASSW = "X-Password",
+			CONTENT_LENGTH = "Content-Length", CONFIRM = "X-Confirm";
+
+	/**
+	 * Restores the session data from a file.
+	 */
+	public static ServerConnector restoreSession() {
+		BufferedReader br = null;
+		ServerConnector newCon = null;
+		try {
+			File sessionFile = new File(CLOUDRAID_HOME + "session");
+			br = new BufferedReader(new FileReader(sessionFile));
+			ServerConnection sc = new ServerConnection(br.readLine(),
+					br.readLine(), br.readLine(), Short.parseShort(br
+							.readLine()));
+			newCon = new ServerConnector(sc);
+			newCon.setSession(br.readLine());
+		} catch (IOException e) {
+			// TODO
+			e.printStackTrace();
+		} finally {
+			try {
+				br.close();
+			} catch (IOException ignore) {
+			}
+		}
+		return newCon;
+	}
+
+	/**
+	 * A {@link Vector} of registered {@link DataPresenter} implementations.
+	 * They will be triggered, if a new file list is retrieved from the
+	 * CloudRAID server.
+	 */
+	private Vector<DataPresenter> dataPresenters = new Vector<DataPresenter>();
+
+	/**
+	 * The {@link ServerConnection} used by this {@link ServerConnector}.
+	 */
+	private ServerConnection sc;
+
+	/**
+	 * The current session ID. Either retrieved from the server or restored from
+	 * the file system.
+	 */
+	private String session = null;
 
 	/**
 	 * Creates a {@link ServerConnector} basing on the credentials in a
@@ -100,6 +139,269 @@ public class ServerConnector {
 	public ServerConnector(ServerConnection sc, DataPresenter dp) {
 		this(sc);
 		this.dataPresenters.add(dp);
+	}
+
+	/**
+	 * Changes the password of the user currently logged in.
+	 * 
+	 * @param newPassword
+	 *            The new password.
+	 * @param newPasswordConfirm
+	 *            The confirmation of the password. Never use the same variable
+	 *            as for newPassword.
+	 * @throws IOException
+	 * @throws HTTPException
+	 */
+	public void changePassword(String newPassword, String newPasswordConfirm)
+			throws IOException, HTTPException {
+		HttpURLConnection con = (HttpURLConnection) sc.getURL("/user/chgpw/")
+				.openConnection();
+		con.setRequestMethod(POST);
+		con.setRequestProperty(COOKIE, session);
+		con.setRequestProperty(USER, sc.getUser());
+		con.setRequestProperty(PASSW, newPassword);
+		con.setRequestProperty(CONFIRM, newPasswordConfirm);
+		con.connect();
+		try {
+			switch (con.getResponseCode()) {
+			case 200:
+				System.out.println("changePW: success");
+				break;
+			case 400:
+				throw new HTTPException(400,
+						"changePW: user name and/or password and/or confirmation missing/wrong");
+			case 401:
+				throw new HTTPException(401, "changePW: " + HTTP401);
+			case 405:
+				throw new HTTPException(401, "changePW: " + HTTP405);
+			case 500:
+				throw new HTTPException(500,
+						"changePW: error while updating the user record");
+			case 503:
+				throw new HTTPException(503, "changePW: " + HTTP503);
+			default:
+				throw new HTTPException(con.getResponseCode(), "changePW: "
+						+ HTTP_UNKNOWN);
+			}
+		} finally {
+			con.disconnect();
+		}
+	}
+
+	/**
+	 * Sends the request for the creation of a new user to the server.
+	 * 
+	 * @param conf
+	 *            The confirmation of the password in the constructor's
+	 *            {@link ServerConnection}.
+	 * @throws IOException
+	 * @throws HTTPException
+	 */
+	public void createUser(String conf) throws IOException, HTTPException {
+		HttpURLConnection con = (HttpURLConnection) sc.getURL("/user/add/")
+				.openConnection();
+		con.setRequestMethod(POST);
+		con.setRequestProperty(USER, sc.getUser());
+		con.setRequestProperty(PASSW, sc.getPassword());
+		con.setRequestProperty(CONFIRM, conf);
+		con.connect();
+		try {
+			switch (con.getResponseCode()) {
+			case 200:
+				System.out.println("createUser: successful");
+				break;
+			case 400:
+				throw new HTTPException(400,
+						"user name and/or password and/or confirmation missing/wrong");
+			case 406:
+				throw new HTTPException(406, HTTP406);
+			case 500:
+				throw new HTTPException(500,
+						"error while adding user to database");
+			default:
+				throw new HTTPException(con.getResponseCode(), HTTP_UNKNOWN);
+			}
+		} finally {
+			con.disconnect();
+		}
+	}
+
+	/**
+	 * Deletes a file on the server.
+	 * 
+	 * @param path
+	 *            The path of the file on the server.
+	 * @throws IOException
+	 * @throws HTTPException
+	 */
+	public void deleteFile(String path) throws IOException, HTTPException {
+		HttpURLConnection con = (HttpURLConnection) sc.getURL(
+				"/file/" + path + "/").openConnection();
+		con.setRequestMethod(DELETE);
+		con.setRequestProperty(COOKIE, session);
+		con.connect();
+		try {
+			switch (con.getResponseCode()) {
+			case 200:
+				System.out.println("delete: success");
+				break;
+			case 401:
+				throw new HTTPException(401, "delete: " + HTTP401);
+			case 404:
+				throw new HTTPException(404, "delete: " + HTTP404);
+			case 405:
+				throw new HTTPException(405, "delete: " + HTTP405);
+			case 500:
+				throw new HTTPException(500, "delete: error deleting the file");
+			case 503:
+				throw new HTTPException(503, "delete: " + HTTP503);
+			default:
+				throw new HTTPException(con.getResponseCode(), "delete: "
+						+ HTTP_UNKNOWN);
+			}
+		} finally {
+			con.disconnect();
+		}
+	}
+
+	/**
+	 * Gets a file from the server. The returned {@link File} object is a
+	 * temporary file, move it to the correct directory and remove it from the
+	 * temporary location.
+	 * 
+	 * @param path
+	 *            The path of the file on the server.
+	 * @return The temporary file.
+	 * @throws IOException
+	 * @throws HTTPException
+	 */
+	public File getFile(String path) throws IOException, HTTPException {
+		File newFile = new File("/tmp/cloudraid-client/" + System.nanoTime()
+				+ ".tmp");
+		InputStream is = null;
+		OutputStream os = null;
+		newFile.getParentFile().mkdirs();
+		HttpURLConnection con = (HttpURLConnection) sc.getURL(
+				"/file/" + path + "/").openConnection();
+		con.setRequestMethod(GET);
+		con.setRequestProperty(COOKIE, session);
+		con.setDoInput(true);
+		con.connect();
+		try {
+			switch (con.getResponseCode()) {
+			case 200:
+				System.out.println("get: success");
+				is = con.getInputStream();
+				os = new FileOutputStream(newFile);
+				byte[] buf = new byte[4096];
+				int len;
+				while ((len = is.read(buf)) > 0) {
+					os.write(buf, 0, len);
+				}
+				break;
+			case 401:
+				throw new HTTPException(401, "get: " + HTTP401);
+			case 404:
+				throw new HTTPException(404, "get: " + HTTP404);
+			case 405:
+				throw new HTTPException(405, "get: " + HTTP405);
+			case 503:
+				throw new HTTPException(503, "get: " + HTTP503);
+			default:
+				throw new HTTPException(con.getResponseCode(), "get: "
+						+ HTTP_UNKNOWN);
+			}
+		} finally {
+			try {
+				if (is != null)
+					is.close();
+			} catch (IOException ignore) {
+			}
+			try {
+				if (os != null)
+					os.close();
+			} catch (IOException ignore) {
+			}
+			con.disconnect();
+		}
+		return newFile;
+	}
+
+	/**
+	 * Retrieves a file list from the server. The file list is automated given
+	 * to every {@link DataPresenter} registered with this
+	 * {@link ServerConnector}.
+	 * 
+	 * @return An {@link ArrayList} of {@link CloudFile}s.
+	 * @throws IOException
+	 * @throws HTTPException
+	 */
+	public Vector<CloudFile> getFileList() throws IOException, HTTPException {
+		Vector<CloudFile> ret = new Vector<CloudFile>();
+		BufferedReader br = null;
+		HttpURLConnection con = (HttpURLConnection) sc.getURL("/list/")
+				.openConnection();
+		con.setRequestMethod(GET);
+		con.setRequestProperty(COOKIE, session);
+		con.connect();
+		try {
+
+			switch (con.getResponseCode()) {
+			case 200:
+				System.out.println("list: successful");
+				br = new BufferedReader(new InputStreamReader(
+						con.getInputStream()));
+				String line;
+				System.out.println("File list:");
+				while ((line = br.readLine()) != null) {
+					if ("".equals(line) || line.length() < 3) {
+						continue;
+					}
+					// "name","hash","1970-01-01 01:00:00.0","STATE"
+					String[] parts = line.substring(1, line.length() - 1)
+							.split("\",\"");
+					if (parts.length != 4) {
+						continue;
+					}
+					for (int i = 0; i < parts.length; i++) {
+						parts[i] = parts[i].replaceAll("&quot;", "\"")
+								.replaceAll("&amp;", "&");
+					}
+					System.out.println(line);
+					Date date;
+					try {
+						date = CLOUDRAID_DATE_FORMAT.parse(parts[2]);
+					} catch (ParseException e) {
+						continue;
+					}
+					ret.add(new CloudFile(this, parts[0], parts[3], date
+							.getTime(), parts[1]));
+				}
+				break;
+			case 401:
+				throw new HTTPException(401, "list: " + HTTP401);
+			case 405:
+				throw new HTTPException(405, "list: " + HTTP405);
+			case 500:
+				throw new HTTPException(500,
+						"list: error getting the file information");
+			case 503:
+				throw new HTTPException(503, "list: " + HTTP503);
+			default:
+				throw new HTTPException(con.getResponseCode(), "list: "
+						+ HTTP_UNKNOWN);
+			}
+		} finally {
+			try {
+				br.close();
+			} catch (Exception ignore) {
+			}
+			con.disconnect();
+		}
+		for (DataPresenter dp : dataPresenters) {
+			dp.giveFileList(ret);
+		}
+		return ret;
 	}
 
 	/**
@@ -188,69 +490,6 @@ public class ServerConnector {
 	}
 
 	/**
-	 * Gets a file from the server. The returned {@link File} object is a
-	 * temporary file, move it to the correct directory and remove it from the
-	 * temporary location.
-	 * 
-	 * @param path
-	 *            The path of the file on the server.
-	 * @return The temporary file.
-	 * @throws IOException
-	 * @throws HTTPException
-	 */
-	public File getFile(String path) throws IOException, HTTPException {
-		File newFile = new File("/tmp/cloudraid-client/" + System.nanoTime()
-				+ ".tmp");
-		InputStream is = null;
-		OutputStream os = null;
-		newFile.getParentFile().mkdirs();
-		HttpURLConnection con = (HttpURLConnection) sc.getURL(
-				"/file/" + path + "/").openConnection();
-		con.setRequestMethod(GET);
-		con.setRequestProperty(COOKIE, session);
-		con.setDoInput(true);
-		con.connect();
-		try {
-			switch (con.getResponseCode()) {
-			case 200:
-				System.out.println("get: success");
-				is = con.getInputStream();
-				os = new FileOutputStream(newFile);
-				byte[] buf = new byte[4096];
-				int len;
-				while ((len = is.read(buf)) > 0) {
-					os.write(buf, 0, len);
-				}
-				break;
-			case 401:
-				throw new HTTPException(401, "get: " + HTTP401);
-			case 404:
-				throw new HTTPException(404, "get: " + HTTP404);
-			case 405:
-				throw new HTTPException(405, "get: " + HTTP405);
-			case 503:
-				throw new HTTPException(503, "get: " + HTTP503);
-			default:
-				throw new HTTPException(con.getResponseCode(), "get: "
-						+ HTTP_UNKNOWN);
-			}
-		} finally {
-			try {
-				if (is != null)
-					is.close();
-			} catch (IOException ignore) {
-			}
-			try {
-				if (os != null)
-					os.close();
-			} catch (IOException ignore) {
-			}
-			con.disconnect();
-		}
-		return newFile;
-	}
-
-	/**
 	 * Sends a file to the server.
 	 * 
 	 * @param path
@@ -258,15 +497,16 @@ public class ServerConnector {
 	 * @param inFile
 	 *            The file to read the data from.
 	 * @param update
-	 *            Set to <code>true</code, if the file shall be updated.
+	 *            Set to <code>true</code, if the file shall be
+	 *            updated/overwritten.
 	 * @throws IOException
 	 * @throws HTTPException
 	 */
 	public void putFile(String path, File inFile, boolean update)
 			throws IOException, HTTPException {
-		String u = update ? "update/" : "";
+		String u = update ? "/update/" : "/";
 		HttpURLConnection con = (HttpURLConnection) sc.getURL(
-				"/file/" + path + "/" + u).openConnection();
+				"/file/" + path + u).openConnection();
 		System.out.println(con.getURL().toString());
 		con.setRequestMethod(PUT);
 		con.setRequestProperty(COOKIE, session);
@@ -317,159 +557,6 @@ public class ServerConnector {
 	}
 
 	/**
-	 * Deletes a file on the server.
-	 * 
-	 * @param path
-	 *            The path of the file on the server.
-	 * @throws IOException
-	 * @throws HTTPException
-	 */
-	public void deleteFile(String path) throws IOException, HTTPException {
-		HttpURLConnection con = (HttpURLConnection) sc.getURL(
-				"/file/" + path + "/").openConnection();
-		con.setRequestMethod(DELETE);
-		con.setRequestProperty(COOKIE, session);
-		con.connect();
-		try {
-			switch (con.getResponseCode()) {
-			case 200:
-				System.out.println("delete: success");
-				break;
-			case 401:
-				throw new HTTPException(401, "delete: " + HTTP401);
-			case 404:
-				throw new HTTPException(404, "delete: " + HTTP404);
-			case 405:
-				throw new HTTPException(405, "delete: " + HTTP405);
-			case 500:
-				throw new HTTPException(500, "delete: error deleting the file");
-			case 503:
-				throw new HTTPException(503, "delete: " + HTTP503);
-			default:
-				throw new HTTPException(con.getResponseCode(), "delete: "
-						+ HTTP_UNKNOWN);
-			}
-		} finally {
-			con.disconnect();
-		}
-	}
-
-	/**
-	 * Retrieves a file list from the server. The file list is automated given
-	 * to every {@link DataPresenter} registered with this
-	 * {@link ServerConnector}.
-	 * 
-	 * @return An {@link ArrayList} of {@link CloudFile}s.
-	 * @throws IOException
-	 * @throws HTTPException
-	 */
-	public Vector<CloudFile> getFileList() throws IOException, HTTPException {
-		Vector<CloudFile> ret = new Vector<CloudFile>();
-		BufferedReader br = null;
-		HttpURLConnection con = (HttpURLConnection) sc.getURL("/list/")
-				.openConnection();
-		con.setRequestMethod(GET);
-		con.setRequestProperty(COOKIE, session);
-		con.connect();
-		try {
-
-			switch (con.getResponseCode()) {
-			case 200:
-				System.out.println("list: successful");
-				br = new BufferedReader(new InputStreamReader(
-						con.getInputStream()));
-				String line;
-				System.out.println("File list:");
-				while ((line = br.readLine()) != null) {
-					if ("".equals(line) || line.length() < 3) {
-						continue;
-					}
-					// "name","hash","1970-01-01 01:00:00.0","STATE"
-					String[] parts = line.substring(1, line.length() - 1)
-							.split("\",\"");
-					if (parts.length != 4) {
-						continue;
-					}
-					for (int i = 0; i < parts.length; i++) {
-						parts[i] = parts[i].replaceAll("&quot;", "\"")
-								.replaceAll("&amp;", "&");
-					}
-					System.out.println(line);
-					Date date;
-					try {
-						date = CLOUDRAID_DATE_FORMAT.parse(parts[2]);
-					} catch (ParseException e) {
-						continue;
-					}
-					ret.add(new CloudFile(this, parts[0], parts[3], date
-							.getTime(), parts[1]));
-				}
-				break;
-			case 401:
-				throw new HTTPException(401, "list: " + HTTP401);
-			case 405:
-				throw new HTTPException(405, "list: " + HTTP405);
-			case 500:
-				throw new HTTPException(500,
-						"list: error getting the file information");
-			case 503:
-				throw new HTTPException(503, "list: " + HTTP503);
-			default:
-				throw new HTTPException(con.getResponseCode(), "list: "
-						+ HTTP_UNKNOWN);
-			}
-		} finally {
-			try {
-				br.close();
-			} catch (Exception ignore) {
-			}
-			con.disconnect();
-		}
-		for (DataPresenter dp : dataPresenters) {
-			dp.giveFileList(ret);
-		}
-		return ret;
-	}
-
-	/**
-	 * Sends the request for the creation of a new user to the server.
-	 * 
-	 * @param conf
-	 *            The confirmation of the password in the constructor's
-	 *            {@link ServerConnection}.
-	 * @throws IOException
-	 * @throws HTTPException
-	 */
-	public void createUser(String conf) throws IOException, HTTPException {
-		HttpURLConnection con = (HttpURLConnection) sc.getURL("/user/add/")
-				.openConnection();
-		con.setRequestMethod(POST);
-		con.setRequestProperty(USER, sc.getUser());
-		con.setRequestProperty(PASSW, sc.getPassword());
-		con.setRequestProperty(CONFIRM, conf);
-		con.connect();
-		try {
-			switch (con.getResponseCode()) {
-			case 200:
-				System.out.println("createUser: successful");
-				break;
-			case 400:
-				throw new HTTPException(400,
-						"user name and/or password and/or confirmation missing/wrong");
-			case 406:
-				throw new HTTPException(406, HTTP406);
-			case 500:
-				throw new HTTPException(500,
-						"error while adding user to database");
-			default:
-				throw new HTTPException(con.getResponseCode(), HTTP_UNKNOWN);
-			}
-		} finally {
-			con.disconnect();
-		}
-	}
-
-	/**
 	 * Registers a {@link DataPresenter} with this {@link ServerConnector}.
 	 * 
 	 * @param dp
@@ -479,8 +566,24 @@ public class ServerConnector {
 		this.dataPresenters.add(dp);
 	}
 
-	public String toString() {
-		return "ServerConnection: " + this.sc + ". Stored session: " + session;
+	/**
+	 * Removes a stored session from the file system.
+	 */
+	private void removeSession() {
+		File sessionFile = new File(CLOUDRAID_HOME + "session");
+		if (sessionFile.exists()) {
+			sessionFile.delete();
+		}
+	}
+
+	/**
+	 * Sets the session for the {@link ServerConnector}. Use this to restore a
+	 * session.
+	 * 
+	 * @param session
+	 */
+	private void setSession(String session) {
+		this.session = session;
 	}
 
 	/**
@@ -516,40 +619,8 @@ public class ServerConnector {
 		}
 	}
 
-	private void setSession(String session) {
-		this.session = session;
-	}
-	
-	private void removeSession() {
-		File sessionFile = new File(CLOUDRAID_HOME + "session");
-		if (sessionFile.exists()) {
-			sessionFile.delete();
-		}
-	}
-
-	/**
-	 * Restores the session data from a file.
-	 */
-	public static ServerConnector restoreSession() {
-		BufferedReader br = null;
-		ServerConnector newCon = null;
-		try {
-			File sessionFile = new File(CLOUDRAID_HOME + "session");
-			br = new BufferedReader(new FileReader(sessionFile));
-			ServerConnection sc = new ServerConnection(br.readLine(),
-					br.readLine(), br.readLine(), Short.parseShort(br
-							.readLine()));
-			newCon = new ServerConnector(sc);
-			newCon.setSession(br.readLine());
-		} catch (IOException e) {
-			// TODO
-			e.printStackTrace();
-		} finally {
-			try {
-				br.close();
-			} catch (IOException ignore) {
-			}
-		}
-		return newCon;
+	@Override
+	public String toString() {
+		return "ServerConnection: " + this.sc + ". Stored session: " + session;
 	}
 }
