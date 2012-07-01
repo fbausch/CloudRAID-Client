@@ -265,22 +265,21 @@ public class ServerConnector {
 	}
 
 	/**
-	 * Gets a file from the server. The returned {@link File} object is a
-	 * temporary file, move it to the correct directory and remove it from the
-	 * temporary location.
+	 * Gets a file from the server.
 	 * 
 	 * @param path
 	 *            The path of the file on the server.
-	 * @return The temporary file.
+	 * @param destination
+	 *            The File object representing the downloaded file will be
+	 *            written to.
 	 * @throws IOException
 	 * @throws HTTPException
 	 */
-	public File getFile(String path) throws IOException, HTTPException {
-		File newFile = new File("/tmp/cloudraid-client/" + System.nanoTime()
-				+ ".tmp");
+	public void getFile(String path, File destination) throws IOException,
+			HTTPException {
 		InputStream is = null;
 		OutputStream os = null;
-		newFile.getParentFile().mkdirs();
+		destination.getParentFile().mkdirs();
 		HttpURLConnection con = (HttpURLConnection) sc.getURL(
 				"/file/" + path + "/").openConnection();
 		con.setRequestMethod(GET);
@@ -292,18 +291,24 @@ public class ServerConnector {
 			case 200:
 				System.out.println("get: success");
 				is = con.getInputStream();
-				os = new FileOutputStream(newFile);
-				// byte[] buf = new byte[4096];
-				// int len, sum = 0;
-				// while ((len = is.read(buf)) != -1) {
-				// os.write(buf, 0, len);
-				// sum += len;
-				// }
-				int sum = 0,
-				read;
-				while ((read = is.read()) != -1) {
-					os.write(read);
-					++sum;
+				os = new FileOutputStream(destination);
+				byte[] buf = new byte[4096];
+				int len,
+				sum = 0;
+				try {
+					while ((len = is.read(buf)) != -1) {
+						os.write(buf, 0, len);
+						sum += len;
+					}
+				} finally {
+					try {
+						is.close();
+					} catch (IOException ignore) {
+					}
+					try {
+						os.close();
+					} catch (IOException ignore) {
+					}
 				}
 				System.out.println("get: read " + sum + " bytes");
 				break;
@@ -320,19 +325,8 @@ public class ServerConnector {
 						+ HTTP_UNKNOWN);
 			}
 		} finally {
-			try {
-				if (is != null)
-					is.close();
-			} catch (IOException ignore) {
-			}
-			try {
-				if (os != null)
-					os.close();
-			} catch (IOException ignore) {
-			}
 			con.disconnect();
 		}
-		return newFile;
 	}
 
 	/**

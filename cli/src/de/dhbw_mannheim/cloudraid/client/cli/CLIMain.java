@@ -139,17 +139,9 @@ public class CLIMain {
 					System.exit(3);
 				}
 				try {
-					File d = sc.getFile(args[1]);
+					sc.getFile(args[1], f);
 					System.out.println("Downloaded file to "
-							+ d.getAbsolutePath());
-					if (d.renameTo(f)) {
-						System.out.println("Successfully copied file to "
-								+ f.getAbsolutePath());
-					} else {
-						System.err.println("Could not copy to "
-								+ f.getAbsolutePath());
-						System.exit(4);
-					}
+							+ f.getAbsolutePath());
 				} catch (IOException e) {
 					System.err.println("Could not get file.");
 				} catch (HTTPException e) {

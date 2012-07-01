@@ -28,10 +28,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Date;
 import java.util.Vector;
@@ -110,11 +106,9 @@ public class MainWindow extends JFrame implements DataPresenter {
 				if (sc != null) {
 					System.out.println("download: " + clickedCloudFile);
 					try {
-						File f = clickedCloudFile.download();
 						System.out.println(fc.getSelectedFile()
 								.getAbsolutePath());
-						MainWindow.this.fileCopy(f, fc.getSelectedFile());
-						f.delete();
+						clickedCloudFile.downloadTo(fc.getSelectedFile());
 					} catch (IOException e1) {
 						MainWindow.this.showError(e1);
 					} catch (HTTPException e1) {
@@ -371,39 +365,6 @@ public class MainWindow extends JFrame implements DataPresenter {
 			data[i++] = d;
 		}
 		this.refreshTable(data);
-	}
-
-	/**
-	 * Copies file a to file b
-	 * 
-	 * @param a
-	 * @param b
-	 */
-	private void fileCopy(File a, File b) {
-		FileWriter out = null;
-		FileReader in = null;
-		try {
-			try {
-				in = new FileReader(a);
-				out = new FileWriter(b);
-				int c;
-				while ((c = in.read()) != -1)
-					out.write(c);
-			} catch (FileNotFoundException e) {
-				return;
-			} catch (IOException e) {
-				return;
-			}
-		} finally {
-			try {
-				in.close();
-			} catch (IOException ignore) {
-			}
-			try {
-				out.close();
-			} catch (IOException ignore) {
-			}
-		}
 	}
 
 	/**

@@ -122,11 +122,27 @@ public class CloudFile {
 						.format(new Date(lastMod)) + ", " + state
 				+ ". ServerConnector: " + sc;
 	}
-	
-	public File download() throws IOException, HTTPException {
-		return this.sc.getFile(this.name);
+
+	/**
+	 * Downloads the file represented by this {@link CloudFile} object to the
+	 * file represented by the <code>destination</code> parameter.
+	 * 
+	 * @param destination
+	 *            The destination of the file.
+	 * @throws IOException
+	 * @throws HTTPException
+	 */
+	public void downloadTo(File destination) throws IOException, HTTPException {
+		this.sc.getFile(this.name, destination);
 	}
-	
+
+	/**
+	 * Deletes the file represented by this {@link CloudFile} object from the
+	 * CloudRAID server.
+	 * 
+	 * @throws IOException
+	 * @throws HTTPException
+	 */
 	public void delete() throws IOException, HTTPException {
 		this.sc.deleteFile(this.name);
 	}
