@@ -293,11 +293,17 @@ public class ServerConnector {
 				System.out.println("get: success");
 				is = con.getInputStream();
 				os = new FileOutputStream(newFile);
-				byte[] buf = new byte[4096];
-				int len, sum = 0;
-				while ((len = is.read(buf)) != -1) {
-					os.write(buf, 0, len);
-					sum += len;
+				// byte[] buf = new byte[4096];
+				// int len, sum = 0;
+				// while ((len = is.read(buf)) != -1) {
+				// os.write(buf, 0, len);
+				// sum += len;
+				// }
+				int sum = 0,
+				read;
+				while ((read = is.read()) != -1) {
+					os.write(read);
+					++sum;
 				}
 				System.out.println("get: read " + sum + " bytes");
 				break;
@@ -623,6 +629,7 @@ public class ServerConnector {
 
 	@Override
 	public String toString() {
-		return "ServerConnection: " + this.sc + ". Stored session: " + session;
+		return "[ServerConnection: " + this.sc + "]. Stored session: "
+				+ session;
 	}
 }

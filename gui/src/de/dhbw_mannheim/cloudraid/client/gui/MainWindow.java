@@ -386,8 +386,8 @@ public class MainWindow extends JFrame implements DataPresenter {
 			try {
 				in = new FileReader(a);
 				out = new FileWriter(b);
-				char c;
-				while ((c = (char) in.read()) != -1)
+				int c;
+				while ((c = in.read()) != -1)
 					out.write(c);
 			} catch (FileNotFoundException e) {
 				return;
