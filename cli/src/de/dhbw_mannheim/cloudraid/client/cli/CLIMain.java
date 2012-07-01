@@ -32,6 +32,7 @@ import java.util.Vector;
 
 import de.dhbw_mannheim.cloudraid.client.api.CloudFile;
 import de.dhbw_mannheim.cloudraid.client.api.HTTPException;
+import de.dhbw_mannheim.cloudraid.client.api.IncompatibleApiVersionException;
 import de.dhbw_mannheim.cloudraid.client.api.ServerConnection;
 import de.dhbw_mannheim.cloudraid.client.api.ServerConnector;
 
@@ -90,6 +91,9 @@ public class CLIMain {
 				} catch (HTTPException e) {
 					System.err.println("Error " + e.getHTTPCode() + ": "
 							+ e.getHTTPErrorMessage());
+				} catch (IncompatibleApiVersionException e) {
+					System.err.println("CloudRAID API not compatible.");
+					System.exit(-3);
 				}
 				System.exit(7);
 			} else {
@@ -98,7 +102,13 @@ public class CLIMain {
 			}
 		}
 		// Try to restore the last session.
-		ServerConnector sc = ServerConnector.restoreSession();
+		ServerConnector sc = null;
+		try {
+			sc = ServerConnector.restoreSession();
+		} catch (IncompatibleApiVersionException e1) {
+			System.err.println("CloudRAID API not compatible.");
+			System.exit(-3);
+		}
 		if (sc == null) {
 			System.err.println("Session not found or corrupt.");
 			System.exit(-1);

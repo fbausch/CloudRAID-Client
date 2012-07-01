@@ -34,8 +34,8 @@ import java.util.Date;
  */
 public class CloudFile {
 
+	private Date lastMod;
 	private String name, state, hashedName;
-	private long lastMod;
 	private ServerConnector sc;
 
 	/**
@@ -57,70 +57,20 @@ public class CloudFile {
 			long lastMod, String hashedName) {
 		this.sc = sc;
 		this.name = name;
-		this.lastMod = lastMod;
+		this.lastMod = new Date(lastMod);
 		this.state = state;
 		this.hashedName = hashedName;
 	}
 
 	/**
-	 * Returns the file's state.
+	 * Deletes the file represented by this {@link CloudFile} object from the
+	 * CloudRAID server.
 	 * 
-	 * @return The state.
+	 * @throws IOException
+	 * @throws HTTPException
 	 */
-	public String getState() {
-		return state;
-	}
-
-	/**
-	 * Returns the name of the file.
-	 * 
-	 * @return The name.
-	 */
-	public String getName() {
-		return name;
-	}
-
-	/**
-	 * Returns the last modification date of the file in milliseconds from
-	 * 1/1/1970 00:00:00.
-	 * 
-	 * @return The last modification date.
-	 */
-	public long getLastMod() {
-		return lastMod;
-	}
-
-	/**
-	 * Returns the hashed file name.
-	 * 
-	 * @return The hashed file name.
-	 */
-	public String getHashedName() {
-		return hashedName;
-	}
-
-	/**
-	 * Returns the {@link ServerConnector}.
-	 * 
-	 * @return The {@link ServerConnector}.
-	 */
-	public ServerConnector getSc() {
-		return sc;
-	}
-
-	/**
-	 * Creates a String representation of the object.
-	 * 
-	 * @return The String representation.
-	 */
-	public String toString() {
-		return name
-				+ " ("
-				+ hashedName
-				+ "), updated on "
-				+ ServerConnector.CLOUDRAID_DATE_FORMAT
-						.format(new Date(lastMod)) + ", " + state
-				+ ". ServerConnector: " + sc;
+	public void delete() throws IOException, HTTPException {
+		this.sc.deleteFile(this.name);
 	}
 
 	/**
@@ -137,13 +87,68 @@ public class CloudFile {
 	}
 
 	/**
-	 * Deletes the file represented by this {@link CloudFile} object from the
-	 * CloudRAID server.
+	 * Returns the hashed file name.
 	 * 
-	 * @throws IOException
-	 * @throws HTTPException
+	 * @return The hashed file name.
 	 */
-	public void delete() throws IOException, HTTPException {
-		this.sc.deleteFile(this.name);
+	public String getHashedName() {
+		return hashedName;
+	}
+
+	/**
+	 * Returns the last modification date of the file as {@link Date} object.
+	 * 
+	 * @return The last modification date.
+	 */
+	public Date getLastMod() {
+		return lastMod;
+	}
+
+	/**
+	 * Returns the last modification date of the file as String formatted using
+	 * the {@link ServerConnector#CLOUDRAID_DATE_FORMAT}.
+	 * 
+	 * @return The last modification date as String.
+	 */
+	public String getLastModAsString() {
+		return ServerConnector.CLOUDRAID_DATE_FORMAT.format(this.lastMod);
+	}
+
+	/**
+	 * Returns the name of the file.
+	 * 
+	 * @return The name.
+	 */
+	public String getName() {
+		return name;
+	}
+
+	/**
+	 * Returns the {@link ServerConnector}.
+	 * 
+	 * @return The {@link ServerConnector}.
+	 */
+	public ServerConnector getSc() {
+		return sc;
+	}
+
+	/**
+	 * Returns the file's state.
+	 * 
+	 * @return The state.
+	 */
+	public String getState() {
+		return state;
+	}
+
+	/**
+	 * Creates a String representation of the object.
+	 * 
+	 * @return The String representation.
+	 */
+	public String toString() {
+		return name + " (" + hashedName + "), updated on "
+				+ ServerConnector.CLOUDRAID_DATE_FORMAT.format(lastMod) + ", "
+				+ state + ". ServerConnector: " + sc;
 	}
 }

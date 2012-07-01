@@ -54,6 +54,11 @@ public class ServerConnector {
 			"yyyy-MM-dd hh:mm:ss.S");
 
 	/**
+	 * Indicates the compatible CloudRAID API version.
+	 */
+	public static final String API_VERSION = "0.1";
+
+	/**
 	 * The top-level path to the programs config.
 	 */
 	private static String CLOUDRAID_HOME = System.getProperty("os.name")
@@ -74,8 +79,11 @@ public class ServerConnector {
 
 	/**
 	 * Restores the session data from a file.
+	 * 
+	 * @throws IncompatibleApiVersionException
 	 */
-	public static ServerConnector restoreSession() {
+	public static ServerConnector restoreSession()
+			throws IncompatibleApiVersionException {
 		BufferedReader br = null;
 		ServerConnector newCon = null;
 		try {
@@ -122,9 +130,14 @@ public class ServerConnector {
 	 * 
 	 * @param sc
 	 *            A {@link ServerConnection}.
+	 * @throws IncompatibleApiVersionException
 	 */
-	public ServerConnector(ServerConnection sc) {
+	public ServerConnector(ServerConnection sc)
+			throws IncompatibleApiVersionException {
 		this.sc = sc;
+		if (!validateApi()) {
+			throw new IncompatibleApiVersionException();
+		}
 	}
 
 	/**
@@ -135,8 +148,10 @@ public class ServerConnector {
 	 *            A {@link ServerConnection}.
 	 * @param dp
 	 *            A {@link DataPresenter}.
+	 * @throws IncompatibleApiVersionException
 	 */
-	public ServerConnector(ServerConnection sc, DataPresenter dp) {
+	public ServerConnector(ServerConnection sc, DataPresenter dp)
+			throws IncompatibleApiVersionException {
 		this(sc);
 		this.dataPresenters.add(dp);
 	}
@@ -186,6 +201,45 @@ public class ServerConnector {
 		} finally {
 			con.disconnect();
 		}
+	}
+
+	/**
+	 * Returns the API information of the CloudRAID server.
+	 * 
+	 * @return A String containing the information.
+	 * @throws IOException
+	 */
+	private boolean validateApi() {
+		HttpURLConnection con = null;
+		BufferedReader br = null;
+		try {
+			con = (HttpURLConnection) sc.getURL("/api/info/").openConnection();
+			con.setRequestMethod(GET);
+			con.setDoInput(true);
+			con.connect();
+			br = new BufferedReader(new InputStreamReader(con.getInputStream()));
+			String line;
+			while ((line = br.readLine()) != null) {
+				if (line.startsWith("Version:")) {
+					return line.substring(8).equals(API_VERSION);
+				}
+			}
+		} catch (IOException e) {
+		} finally {
+			try {
+				if (br != null)
+					br.close();
+			} catch (IOException ignore) {
+			}
+			if (con != null) {
+				try {
+					con.getInputStream().close();
+				} catch (IOException ignore) {
+				}
+				con.disconnect();
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -270,8 +324,7 @@ public class ServerConnector {
 	 * @param path
 	 *            The path of the file on the server.
 	 * @param destination
-	 *            The File object representing the downloaded file will be
-	 *            written to.
+	 *            The file where the CloudRAID file will be written to.
 	 * @throws IOException
 	 * @throws HTTPException
 	 */

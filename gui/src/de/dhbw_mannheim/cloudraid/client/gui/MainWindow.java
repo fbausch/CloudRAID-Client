@@ -29,7 +29,6 @@ import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
-import java.util.Date;
 import java.util.Vector;
 
 import javax.swing.JFileChooser;
@@ -357,11 +356,8 @@ public class MainWindow extends JFrame implements DataPresenter {
 		Object[][] data = new Object[fileList.size()][4];
 		int i = 0;
 		for (CloudFile cf : fileList) {
-			Object[] d = new Object[] {
-					cf.getName(),
-					cf.getState(),
-					ServerConnector.CLOUDRAID_DATE_FORMAT.format(new Date(cf
-							.getLastMod())), cf };
+			Object[] d = new Object[] { cf.getName(), cf.getState(),
+					cf.getLastModAsString(), cf };
 			data[i++] = d;
 		}
 		this.refreshTable(data);

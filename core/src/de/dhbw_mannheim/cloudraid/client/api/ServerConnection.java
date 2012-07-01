@@ -37,6 +37,21 @@ public class ServerConnection {
 	private String server;
 	private short port;
 
+	/**
+	 * Creates an object holding the relevant data to establish a connection to
+	 * a CloudRAID server.
+	 * 
+	 * @param server
+	 *            The server's address. It does not matter, whether it starts
+	 *            with "http://" or not.
+	 * @param user
+	 *            The user name.
+	 * @param password
+	 *            The user's password.
+	 * @param port
+	 *            The server port.
+	 * @throws MalformedURLException
+	 */
 	public ServerConnection(String server, String user, String password,
 			short port) throws MalformedURLException {
 		if (!server.startsWith("http://")) {
@@ -49,6 +64,13 @@ public class ServerConnection {
 		this.password = password;
 	}
 
+	/**
+	 * Returns a URL to a resource on the CloudRAID server.
+	 * 
+	 * @param path
+	 *            The path of the resource on the server.
+	 * @return The {@link URL} object to the resource.
+	 */
 	protected URL getURL(String path) {
 		try {
 			return new URL(server + ":" + port + path);
@@ -58,23 +80,44 @@ public class ServerConnection {
 		}
 	}
 
+	/**
+	 * Returns the user name of the connection.
+	 * 
+	 * @return The user name.
+	 */
 	protected String getUser() {
 		return this.user;
 	}
 
+	/**
+	 * Returns the user's password.
+	 * 
+	 * @return The password.
+	 */
 	protected String getPassword() {
 		return this.password;
 	}
 
+	/**
+	 * Returns the server address.
+	 * 
+	 * @return The server address.
+	 */
 	protected String getServer() {
 		return this.server;
 	}
 
+	/**
+	 * Returns the port of CloudRAID on the server.
+	 * 
+	 * @return The port.
+	 */
 	protected short getPort() {
 		return this.port;
 	}
 
+	@Override
 	public String toString() {
-		return user + ":" + password + "@" + server + ":" + port;
+		return user + "@" + server + ":" + port;
 	}
 }

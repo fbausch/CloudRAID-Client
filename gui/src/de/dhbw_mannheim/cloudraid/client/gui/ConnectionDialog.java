@@ -41,6 +41,7 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
+import de.dhbw_mannheim.cloudraid.client.api.IncompatibleApiVersionException;
 import de.dhbw_mannheim.cloudraid.client.api.ServerConnection;
 
 public class ConnectionDialog extends JDialog {
@@ -250,7 +251,13 @@ public class ConnectionDialog extends JDialog {
 					"This is not an URL.\n" + e.getMessage());
 			return;
 		}
-		ClientMain.setServerConnection(sc);
+		try {
+			ClientMain.setServerConnection(sc);
+		} catch (IncompatibleApiVersionException e) {
+			JOptionPane.showMessageDialog(this,
+					"API of CloudRAID server not supported by this client.");
+			return;
+		}
 		this.dispose();
 	}
 
