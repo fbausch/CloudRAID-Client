@@ -294,10 +294,12 @@ public class ServerConnector {
 				is = con.getInputStream();
 				os = new FileOutputStream(newFile);
 				byte[] buf = new byte[4096];
-				int len;
-				while ((len = is.read(buf)) > 0) {
+				int len, sum = 0;
+				while ((len = is.read(buf)) != -1) {
 					os.write(buf, 0, len);
+					sum += len;
 				}
+				System.out.println("get: read " + sum + " bytes");
 				break;
 			case 401:
 				throw new HTTPException(401, "get: " + HTTP401);
