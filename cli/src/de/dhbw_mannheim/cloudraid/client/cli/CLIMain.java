@@ -78,9 +78,9 @@ public class CLIMain {
 		System.out.println("  - downloads a file from the server.\n");
 		System.out.println("* delete <filename>");
 		System.out.println("  - deletes a file on the server.\n");
-		System.out.println("* put <path_to_file> <filename>");
+		System.out.println("* put <filename> <path_to_file>");
 		System.out.println("  - uploads a file to the server.\n");
-		System.out.println("* update <path_to_file> <filename>");
+		System.out.println("* update <filename> <path_to_file>");
 		System.out
 				.println("  - uploads _and_ overwrites a file on the server.\n");
 		System.out.println("* changepw");
@@ -92,7 +92,7 @@ public class CLIMain {
 	 * Executes the upload command and handles {@link Exception}s.
 	 * 
 	 * @param args
-	 *            The argument Array from the {@link #main(String[])} method.
+	 *            The argument Array.
 	 * @param update
 	 *            indicates, if new upload or update.
 	 * @param sc
@@ -101,14 +101,14 @@ public class CLIMain {
 	 */
 	private static void upload(String[] args, boolean update, ServerConnector sc) {
 		if (args.length == 3) {
-			File f = new File(args[1]);
+			File f = new File(args[2]);
 			if (!f.exists()) {
 				System.out.println("File does not exist. ("
 						+ f.getAbsolutePath() + ")");
 				return;
 			}
 			try {
-				sc.putFile(args[2], f, update);
+				sc.putFile(args[1], f, update);
 			} catch (IOException e) {
 				System.out.println("Could not upload your file.");
 			} catch (HTTPException e) {
@@ -120,6 +120,11 @@ public class CLIMain {
 		}
 	}
 
+	/**
+	 * Starts the interactive console.
+	 * 
+	 * @throws IncompatibleApiVersionException
+	 */
 	private static void interactive() throws IncompatibleApiVersionException {
 		ServerConnector sc = null;
 		Console c = System.console();
