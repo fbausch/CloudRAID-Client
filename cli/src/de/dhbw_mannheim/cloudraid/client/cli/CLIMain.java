@@ -27,6 +27,7 @@ import java.io.Console;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Vector;
 
 import de.dhbw_mannheim.cloudraid.client.api.CloudFile;
 import de.dhbw_mannheim.cloudraid.client.api.HTTPException;
@@ -42,6 +43,9 @@ import de.dhbw_mannheim.cloudraid.client.api.ServerConnector;
  * 
  */
 public class CLIMain {
+
+	private static Vector<CloudFile> fileList = new Vector<CloudFile>();
+	private static ServerConnector sc = null;
 
 	/**
 	 * Creates an interactive console for CloudRAID.
@@ -126,10 +130,34 @@ public class CLIMain {
 	 * @throws IncompatibleApiVersionException
 	 */
 	private static void interactive() throws IncompatibleApiVersionException {
-		ServerConnector sc = null;
 		Console c = System.console();
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 		String[] commands;
+		Runnable lister = new Runnable() {
+			@Override
+			public void run() {
+				while (true) {
+					if (sc != null) {
+						try {
+							fileList = sc.getFileList();
+							System.out.println("Lister got file list.");
+						} catch (IOException ignore) {
+						} catch (HTTPException ignore) {
+						} catch (NullPointerException ignore) {
+						}
+					} else {
+						System.out.println("Stopped lister.");
+						return;
+					}
+					try {
+						Thread.sleep(1000L * 60 * 60);
+					} catch (InterruptedException e) {
+						System.out.println("Lister interrupted.");
+					}
+				}
+			}
+		};
+		Thread listerThread = null;
 		while (true) {
 			System.out.print("craid> ");
 			String command = "";
@@ -164,6 +192,8 @@ public class CLIMain {
 								commands[2], commands[1], pw,
 								Short.parseShort(commands[3])));
 						sc.login();
+						listerThread = new Thread(lister);
+						listerThread.start();
 					} catch (HTTPException e) {
 						System.out.println("Could not log in. Try again.");
 						System.out.println(e.getHTTPCode() + ": "
@@ -196,6 +226,7 @@ public class CLIMain {
 				if ("logout".equals(command)) {
 					try {
 						sc.logout();
+						listerThread.interrupt();
 					} catch (Exception ignore) {
 					}
 					sc = null;
@@ -222,7 +253,7 @@ public class CLIMain {
 					} else {
 						try {
 							boolean found = false;
-							for (CloudFile file : sc.getFileList()) {
+							for (CloudFile file : fileList) {
 								if (file.getName().equals(commands[1])) {
 									file.downloadTo(new File(commands[1]));
 									found = true;
@@ -288,6 +319,9 @@ public class CLIMain {
 					System.out.println("Invalid command.");
 					CLIMain.printUsage();
 				}
+			}
+			if (listerThread != null) {
+				listerThread.interrupt();
 			}
 		}
 	}
