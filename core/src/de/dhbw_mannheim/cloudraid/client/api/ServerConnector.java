@@ -48,15 +48,15 @@ import java.util.Vector;
  */
 public class ServerConnector {
 	/**
+	 * Indicates the compatible CloudRAID API version.
+	 */
+	public static final String API_VERSION = "0.1";
+
+	/**
 	 * The date format used by the CloudRAID server.
 	 */
 	public static final SimpleDateFormat CLOUDRAID_DATE_FORMAT = new SimpleDateFormat(
 			"yyyy-MM-dd hh:mm:ss.S");
-
-	/**
-	 * Indicates the compatible CloudRAID API version.
-	 */
-	public static final String API_VERSION = "0.1";
 
 	/**
 	 * The top-level path to the programs config.
@@ -131,9 +131,10 @@ public class ServerConnector {
 	 * @param sc
 	 *            A {@link ServerConnection}.
 	 * @throws IncompatibleApiVersionException
+	 * @throws IOException
 	 */
 	public ServerConnector(ServerConnection sc)
-			throws IncompatibleApiVersionException {
+			throws IncompatibleApiVersionException, IOException {
 		this.sc = sc;
 		if (!validateApi()) {
 			throw new IncompatibleApiVersionException();
@@ -149,9 +150,10 @@ public class ServerConnector {
 	 * @param dp
 	 *            A {@link DataPresenter}.
 	 * @throws IncompatibleApiVersionException
+	 * @throws IOException
 	 */
 	public ServerConnector(ServerConnection sc, DataPresenter dp)
-			throws IncompatibleApiVersionException {
+			throws IncompatibleApiVersionException, IOException {
 		this(sc);
 		this.dataPresenters.add(dp);
 	}
@@ -201,45 +203,6 @@ public class ServerConnector {
 		} finally {
 			con.disconnect();
 		}
-	}
-
-	/**
-	 * Returns the API information of the CloudRAID server.
-	 * 
-	 * @return A String containing the information.
-	 * @throws IOException
-	 */
-	private boolean validateApi() {
-		HttpURLConnection con = null;
-		BufferedReader br = null;
-		try {
-			con = (HttpURLConnection) sc.getURL("/api/info/").openConnection();
-			con.setRequestMethod(GET);
-			con.setDoInput(true);
-			con.connect();
-			br = new BufferedReader(new InputStreamReader(con.getInputStream()));
-			String line;
-			while ((line = br.readLine()) != null) {
-				if (line.startsWith("Version:")) {
-					return line.substring(8).equals(API_VERSION);
-				}
-			}
-		} catch (IOException e) {
-		} finally {
-			try {
-				if (br != null)
-					br.close();
-			} catch (IOException ignore) {
-			}
-			if (con != null) {
-				try {
-					con.getInputStream().close();
-				} catch (IOException ignore) {
-				}
-				con.disconnect();
-			}
-		}
-		return false;
 	}
 
 	/**
@@ -678,5 +641,44 @@ public class ServerConnector {
 	public String toString() {
 		return "[ServerConnection: " + this.sc + "]. Stored session: "
 				+ session;
+	}
+
+	/**
+	 * Validates the API version of the CloudRAID server.
+	 * 
+	 * @return true, if the server's API version matches the API version
+	 *         supported by this {@link ServerConnector}; false, if not.
+	 * @throws IOException
+	 */
+	private boolean validateApi() throws IOException {
+		HttpURLConnection con = null;
+		BufferedReader br = null;
+		try {
+			con = (HttpURLConnection) sc.getURL("/api/info/").openConnection();
+			con.setRequestMethod(GET);
+			con.setDoInput(true);
+			con.connect();
+			br = new BufferedReader(new InputStreamReader(con.getInputStream()));
+			String line;
+			while ((line = br.readLine()) != null) {
+				if (line.startsWith("Version:")) {
+					return line.substring(8).equals(API_VERSION);
+				}
+			}
+		} finally {
+			try {
+				if (br != null)
+					br.close();
+			} catch (IOException ignore) {
+			}
+			if (con != null) {
+				try {
+					con.getInputStream().close();
+				} catch (IOException ignore) {
+				}
+				con.disconnect();
+			}
+		}
+		return false;
 	}
 }

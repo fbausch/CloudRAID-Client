@@ -30,6 +30,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.IOException;
 import java.net.MalformedURLException;
 
 import javax.swing.BorderFactory;
@@ -256,6 +257,9 @@ public class ConnectionDialog extends JDialog {
 		} catch (IncompatibleApiVersionException e) {
 			JOptionPane.showMessageDialog(this,
 					"API of CloudRAID server not supported by this client.");
+			return;
+		} catch (IOException e) {
+			JOptionPane.showMessageDialog(this, "No connection to server.");
 			return;
 		}
 		this.dispose();

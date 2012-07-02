@@ -27,8 +27,6 @@ import java.io.Console;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.util.Vector;
 
 import de.dhbw_mannheim.cloudraid.client.api.CloudFile;
 import de.dhbw_mannheim.cloudraid.client.api.HTTPException;
@@ -46,179 +44,19 @@ import de.dhbw_mannheim.cloudraid.client.api.ServerConnector;
 public class CLIMain {
 
 	/**
-	 * Executes depending on the command-line arguments different methods of
-	 * {@link ServerConnector}.
+	 * Creates an interactive console for CloudRAID.
 	 * 
 	 * @param args
-	 *            The command-line arguments. See {@link #printUsage()} for the
-	 *            usage of the command-line arguments.
+	 *            Not interpreted.
 	 */
 	public static void main(String[] args) {
-		// Check for arguments
-		if (args.length == 0) {
-			System.err.println("No arguments given.");
-			printUsage();
-			System.exit(1);
-		}
-		// Check for login
-		else if ("login".equals(args[0])) {
-			if (args.length == 4) {
-				BufferedReader in = new BufferedReader(new InputStreamReader(
-						System.in));
-				System.out.println("Enter password:");
-				try {
-					String pw = "";
-					Console c = System.console();
-					if (c == null) {
-						pw = in.readLine();
-					} else {
-						pw = String.valueOf(c.readPassword());
-					}
-					System.out.println("");
-					ServerConnector sc;
-					sc = new ServerConnector(new ServerConnection(args[2],
-							args[1], pw, Short.parseShort(args[3])));
-					sc.login();
-					sc.storeSession();
-					System.out.println("Successfully logged in.");
-					System.exit(0);
-				} catch (NumberFormatException e) {
-					System.err.println("Invalid port number.");
-				} catch (MalformedURLException e) {
-					System.err.println("Invalid URL.");
-				} catch (IOException e) {
-					System.err.println("Could not log in.");
-				} catch (HTTPException e) {
-					System.err.println("Error " + e.getHTTPCode() + ": "
-							+ e.getHTTPErrorMessage());
-				} catch (IncompatibleApiVersionException e) {
-					System.err.println("CloudRAID API not compatible.");
-					System.exit(-3);
-				}
-				System.exit(7);
-			} else {
-				System.err.println("Wrong number of arguments.");
-				System.exit(2);
-			}
-		}
-		// Try to restore the last session.
-		ServerConnector sc = null;
+		// Start interactive mode
 		try {
-			sc = ServerConnector.restoreSession();
-		} catch (IncompatibleApiVersionException e1) {
-			System.err.println("CloudRAID API not compatible.");
-			System.exit(-3);
-		}
-		if (sc == null) {
-			System.err.println("Session not found or corrupt.");
-			System.exit(-1);
-		}
-		// Check for logout
-		else if ("logout".equals(args[0])) {
-			try {
-				sc.logout();
-				System.out.println("Successfully logged out.");
-			} catch (IOException e) {
-				System.err.println("Could not log out.");
-			} catch (HTTPException e) {
-				System.err.println("Error " + e.getHTTPCode() + ": "
-						+ e.getHTTPErrorMessage());
-			}
-		}
-		// Check for file list
-		else if ("list".equals(args[0])) {
-			try {
-				Vector<CloudFile> cfs = sc.getFileList();
-				System.out.println(cfs.size() + " files on CloudRaid server:");
-				for (CloudFile cf : cfs) {
-					System.out.println(cf.toString());
-				}
-			} catch (IOException e) {
-				System.err.println("Could not get file list.");
-			} catch (HTTPException e) {
-				System.err.println("Error " + e.getHTTPCode() + ": "
-						+ e.getHTTPErrorMessage());
-			}
-		}
-		// Check for download of file
-		else if ("get".equals(args[0])) {
-			if (args.length == 2) {
-				File f = new File(args[1]);
-				if (f.exists()) {
-					System.err.println("File already exists locally.");
-					System.exit(3);
-				}
-				try {
-					sc.getFile(args[1], f);
-					System.out.println("Downloaded file to "
-							+ f.getAbsolutePath());
-				} catch (IOException e) {
-					System.err.println("Could not get file.");
-				} catch (HTTPException e) {
-					System.err.println("Error " + e.getHTTPCode() + ": "
-							+ e.getHTTPErrorMessage());
-				}
-			} else {
-				System.err.println("Wrong number of arguments.");
-				System.exit(2);
-			}
-		}
-		// Check for deletion of file
-		else if ("delete".equals(args[0])) {
-			if (args.length == 2) {
-				try {
-					sc.deleteFile(args[1]);
-				} catch (IOException e) {
-					System.err.println("Could not delete file.");
-				} catch (HTTPException e) {
-					System.err.println("Error " + e.getHTTPCode() + ": "
-							+ e.getHTTPErrorMessage());
-				}
-			} else {
-				System.err.println("Wrong number of arguments.");
-				System.exit(2);
-			}
-		}
-		// Check for upload of file
-		else if ("put".equals(args[0])) {
-			upload(args, false, sc);
-		}
-		// Check for update of file
-		else if ("update".equals(args[0])) {
-			upload(args, true, sc);
-		}
-		// Check for up changing password
-		else if ("changepw".equals(args[0])) {
-			BufferedReader in = new BufferedReader(new InputStreamReader(
-					System.in));
-			try {
-				String pw, pw2;
-				Console c = System.console();
-				System.out.println("Enter new password:");
-				if (c == null) {
-					pw = in.readLine();
-				} else {
-					pw = String.valueOf(c.readPassword());
-				}
-				System.out.println("Confirm new password:");
-				if (c == null) {
-					pw2 = in.readLine();
-				} else {
-					pw2 = String.valueOf(c.readPassword());
-				}
-				sc.changePassword(pw, pw2);
-			} catch (IOException e) {
-				System.err.println("Could not change password.");
-			} catch (HTTPException e) {
-				System.err.println("Error " + e.getHTTPCode() + ": "
-						+ e.getHTTPErrorMessage());
-			}
-		}
-		// No known keyword given
-		else {
-			System.err.println("Unknown command.");
-			printUsage();
-			System.exit(-2);
+			CLIMain.interactive();
+			System.exit(0);
+		} catch (IncompatibleApiVersionException e) {
+			e.printStackTrace();
+			System.exit(1);
 		}
 	}
 
@@ -265,22 +103,176 @@ public class CLIMain {
 		if (args.length == 3) {
 			File f = new File(args[1]);
 			if (!f.exists()) {
-				System.err.println("File does not exist.");
-				System.exit(5);
+				System.out.println("File does not exist. ("
+						+ f.getAbsolutePath() + ")");
+				return;
 			}
 			try {
 				sc.putFile(args[2], f, update);
 			} catch (IOException e) {
-				System.err.println("Could not upload your file.");
-				System.exit(6);
+				System.out.println("Could not upload your file.");
 			} catch (HTTPException e) {
-				System.err.println("Error " + e.getHTTPCode() + ": "
+				System.out.println(e.getHTTPCode() + ": "
 						+ e.getHTTPErrorMessage());
 			}
 		} else {
-			System.err.println("Wrong number of arguments.");
-			System.exit(2);
+			System.out.println("Invalid syntax.");
 		}
 	}
 
+	private static void interactive() throws IncompatibleApiVersionException {
+		ServerConnector sc = null;
+		Console c = System.console();
+		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+		String[] commands;
+		while (true) {
+			System.out.print("craid> ");
+			String command = "";
+			try {
+				command = in.readLine().trim();
+			} catch (IOException e1) {
+				System.out.println("Error while reading your command.");
+				return;
+			}
+			if ("".equals(command)) {
+				// Empty command. Do nothing.
+			} else if (command.startsWith("login")) {
+				commands = command.split(" ", 4);
+				if (commands.length != 4) {
+					System.out.println("Invalid syntax.");
+				} else {
+					System.out.println("Enter password:");
+					String pw = "";
+					if (c == null) {
+						try {
+							pw = in.readLine();
+						} catch (IOException e) {
+							System.out
+									.println("Error while reading the password.");
+							return;
+						}
+					} else {
+						pw = String.valueOf(c.readPassword());
+					}
+					try {
+						sc = new ServerConnector(new ServerConnection(
+								commands[2], commands[1], pw,
+								Short.parseShort(commands[3])));
+						sc.login();
+					} catch (HTTPException e) {
+						System.out.println("Could not log in. Try again.");
+						System.out.println(e.getHTTPCode() + ": "
+								+ e.getHTTPErrorMessage());
+						sc = null;
+					} catch (IOException e) {
+						System.out
+								.println("No connection to server. Try again.");
+						sc = null;
+					} catch (NumberFormatException e) {
+						System.out.println("Invalid port number.");
+						sc = null;
+					}
+				}
+			} else if ("exit".equals(command) || "quit".equals(command)) {
+				System.out.println("Exit CloudRAID client.");
+				try {
+					if (sc != null) {
+						sc.logout();
+					}
+				} catch (HTTPException ignore) {
+				} catch (IOException ignore) {
+				}
+				break;
+			} else if (sc == null) {
+				System.out.println("Invalid command.");
+				CLIMain.printUsage();
+			} else {
+				// Check for logout
+				if ("logout".equals(command)) {
+					try {
+						sc.logout();
+					} catch (Exception ignore) {
+					}
+					sc = null;
+				} // Check for list command
+				else if ("list".equals(command)) {
+					try {
+						for (CloudFile file : sc.getFileList()) {
+							System.out.println(file.getName() + " ("
+									+ file.getHashedName() + "), "
+									+ file.getState() + ", "
+									+ file.getLastModAsString());
+						}
+					} catch (HTTPException e) {
+						System.out.println(e.getHTTPCode() + ": "
+								+ e.getHTTPErrorMessage());
+					} catch (IOException e) {
+						System.out.println("Could not connect to server.");
+					}
+				} // Check for download of file
+				else if (command.startsWith("get")) {
+					commands = command.split(" ", 2);
+					if (commands.length != 2) {
+						System.out.println("Invalid syntax.");
+					} else {
+						try {
+							sc.getFile(commands[1], new File(commands[1]));
+						} catch (HTTPException e) {
+							System.out.println(e.getHTTPCode() + ": "
+									+ e.getHTTPErrorMessage());
+						} catch (IOException e) {
+							System.out.println("Could not connect to server.");
+						}
+					}
+				} // Check for upload of file
+				else if (command.startsWith("put")) {
+					upload(command.split(" ", 3), false, sc);
+				} // Check for update of file
+				else if (command.startsWith("update")) {
+					upload(command.split(" ", 3), true, sc);
+				} // Check for deletion of file {
+				else if (command.startsWith("delete")) {
+					commands = command.split(" ", 2);
+					if (commands.length != 2) {
+						System.out.println("Invalid syntax.");
+					} else {
+						try {
+							sc.deleteFile(commands[1]);
+						} catch (HTTPException e) {
+							System.out.println(e.getHTTPCode() + ": "
+									+ e.getHTTPErrorMessage());
+						} catch (IOException e) {
+							System.out.println("Could not connect to server.");
+						}
+					}
+				} // Check for changing the password
+				else if ("changepw".equals(command)) {
+					try {
+						String pw, pw2;
+						System.out.println("Enter new password:");
+						if (c == null) {
+							pw = in.readLine();
+						} else {
+							pw = String.valueOf(c.readPassword());
+						}
+						System.out.println("Confirm new password:");
+						if (c == null) {
+							pw2 = in.readLine();
+						} else {
+							pw2 = String.valueOf(c.readPassword());
+						}
+						sc.changePassword(pw, pw2);
+					} catch (IOException e) {
+						System.out.println("Could not change password.");
+					} catch (HTTPException e) {
+						System.out.println(e.getHTTPCode() + ": "
+								+ e.getHTTPErrorMessage());
+					}
+				} else {
+					System.out.println("Invalid command.");
+					CLIMain.printUsage();
+				}
+			}
+		}
+	}
 }

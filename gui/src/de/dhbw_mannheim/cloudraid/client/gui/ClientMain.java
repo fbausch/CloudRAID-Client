@@ -22,6 +22,8 @@
 
 package de.dhbw_mannheim.cloudraid.client.gui;
 
+import java.io.IOException;
+
 import de.dhbw_mannheim.cloudraid.client.api.IncompatibleApiVersionException;
 import de.dhbw_mannheim.cloudraid.client.api.ServerConnection;
 import de.dhbw_mannheim.cloudraid.client.api.ServerConnector;
@@ -45,13 +47,17 @@ public class ClientMain {
 	 * @param sc
 	 *            A {@link ServerConnection}.
 	 * @throws IncompatibleApiVersionException
+	 * @throws IOException 
 	 */
 	public static synchronized void setServerConnection(ServerConnection sc)
-			throws IncompatibleApiVersionException {
+			throws IncompatibleApiVersionException, IOException {
 		ClientMain.serverConnection = sc;
 		try {
 			ClientMain.serverConnector = new ServerConnector(sc, mainWindow);
 		} catch (IncompatibleApiVersionException e) {
+			ClientMain.resetServerConnection();
+			throw e;
+		} catch (IOException e) {
 			ClientMain.resetServerConnection();
 			throw e;
 		}
