@@ -59,11 +59,14 @@ public class MainWindow extends JFrame implements DataPresenter {
 	private JPopupMenu popup;
 	private JScrollPane scrollPane;
 	private CloudFile clickedCloudFile;
-	private static final String[] HEADINGS = new String[] { "Name", "State",
-			"Date", "File" };
+	private static final String[] HEADINGS = new String[] {
+			I18n.getInstance().getString("name"),
+			I18n.getInstance().getString("state"),
+			I18n.getInstance().getString("date"), "File" };
 
 	public MainWindow() {
-		super("CloudRAID Client GUI");
+		super(I18n.getInstance().getString("mainWindowTitle"));
+		I18n i = I18n.getInstance();
 		this.setLayout(null);
 		this.setBounds(50, 50, 600, 430);
 		this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
@@ -73,8 +76,8 @@ public class MainWindow extends JFrame implements DataPresenter {
 			}
 		});
 
-		popup = new JPopupMenu("File Actions");
-		deleteItem = new JMenuItem("Delete");
+		popup = new JPopupMenu(i.getString("fileActions"));
+		deleteItem = new JMenuItem(i.getString("delete"));
 		deleteItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -92,7 +95,7 @@ public class MainWindow extends JFrame implements DataPresenter {
 				}
 			}
 		});
-		downloadItem = new JMenuItem("Download");
+		downloadItem = new JMenuItem(i.getString("download"));
 		downloadItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -121,10 +124,10 @@ public class MainWindow extends JFrame implements DataPresenter {
 
 		menuBar = new JMenuBar();
 
-		fileMenu = new JMenu("CloudRAID");
+		fileMenu = new JMenu(i.getString("mainMenuTitle"));
 		fileMenu.setMnemonic('c');
 
-		connectItem = new JMenuItem("Connect...");
+		connectItem = new JMenuItem(i.getString("connect") + "...");
 		connectItem.setMnemonic('c');
 		connectItem.addActionListener(new ActionListener() {
 			@Override
@@ -157,7 +160,7 @@ public class MainWindow extends JFrame implements DataPresenter {
 			}
 		});
 
-		userCreationItem = new JMenuItem("Create user");
+		userCreationItem = new JMenuItem(i.getString("createUser"));
 		userCreationItem.setMnemonic('u');
 		userCreationItem.addActionListener(new ActionListener() {
 			@Override
@@ -182,7 +185,7 @@ public class MainWindow extends JFrame implements DataPresenter {
 			}
 		});
 
-		disconnectItem = new JMenuItem("Disconnect");
+		disconnectItem = new JMenuItem(i.getString("disconnect"));
 		disconnectItem.setMnemonic('d');
 		disconnectItem.addActionListener(new ActionListener() {
 			@Override
@@ -201,7 +204,7 @@ public class MainWindow extends JFrame implements DataPresenter {
 		});
 		disconnectItem.setEnabled(false);
 
-		closeItem = new JMenuItem("Quit...");
+		closeItem = new JMenuItem(i.getString("quit") + "...");
 		closeItem.setMnemonic('q');
 		closeItem.addActionListener(new ActionListener() {
 			@Override
@@ -215,7 +218,7 @@ public class MainWindow extends JFrame implements DataPresenter {
 		fileMenu.add(disconnectItem);
 		fileMenu.add(closeItem);
 
-		uploadItem = new JMenuItem("Upload a file");
+		uploadItem = new JMenuItem(i.getString("upload"));
 		uploadItem.setMnemonic('u');
 		uploadItem.addActionListener(new ActionListener() {
 			@Override
@@ -250,7 +253,7 @@ public class MainWindow extends JFrame implements DataPresenter {
 		});
 		uploadItem.setEnabled(false);
 
-		refreshItem = new JMenuItem("Refresh list");
+		refreshItem = new JMenuItem(i.getString("refresh"));
 		refreshItem.setMnemonic('r');
 		refreshItem.addActionListener(new ActionListener() {
 			@Override
@@ -367,8 +370,10 @@ public class MainWindow extends JFrame implements DataPresenter {
 	 * Closes the MainWindow and exits the application.
 	 */
 	private void quit() {
+		I18n i = I18n.getInstance();
 		int r = JOptionPane.showConfirmDialog(MainWindow.this,
-				"Are you sure to close the CloudRAID client?", "Confirm exit",
+				i.getString("exitConfirmationQuestion"),
+				i.getString("exitConfirmationTitle"),
 				JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
 		if (r != JOptionPane.YES_OPTION) {
 			return;
@@ -393,9 +398,8 @@ public class MainWindow extends JFrame implements DataPresenter {
 	 *            The {@link IOException}.
 	 */
 	private void showError(IOException e) {
-		JOptionPane.showMessageDialog(this, e.getMessage(),
-				"Error while connecting to the server.",
-				JOptionPane.ERROR_MESSAGE);
+		JOptionPane.showMessageDialog(this, e.getMessage(), I18n.getInstance()
+				.getString("connectionError"), JOptionPane.ERROR_MESSAGE);
 	}
 
 	/**
@@ -408,7 +412,8 @@ public class MainWindow extends JFrame implements DataPresenter {
 	private void showError(HTTPException e) {
 		JOptionPane.showMessageDialog(this,
 				e.getHTTPCode() + ": " + e.getHTTPErrorMessage(),
-				"Error " + e.getHTTPCode(), JOptionPane.ERROR_MESSAGE);
+				I18n.getInstance().getString("error") + " " + e.getHTTPCode(),
+				JOptionPane.ERROR_MESSAGE);
 	}
 
 	/**

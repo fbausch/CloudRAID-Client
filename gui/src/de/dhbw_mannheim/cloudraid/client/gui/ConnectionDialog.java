@@ -82,7 +82,8 @@ public class ConnectionDialog extends JDialog {
 	};
 
 	public ConnectionDialog(MainWindow parent) {
-		super(parent, "Connection");
+		super(parent, I18n.getInstance().getString("connectionDialogTitle"));
+		I18n i = I18n.getInstance();
 		this.setModalityType(ModalityType.APPLICATION_MODAL);
 		this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		this.setResizable(false);
@@ -93,7 +94,7 @@ public class ConnectionDialog extends JDialog {
 		/**
 		 * connect button
 		 */
-		connectButton = new JButton("Connect");
+		connectButton = new JButton(i.getString("connect"));
 		connectButton.addKeyListener(returnKeyListener);
 		connectButton.setPreferredSize(new Dimension(150, 30));
 		connectButton.addActionListener(new ActionListener() {
@@ -106,7 +107,7 @@ public class ConnectionDialog extends JDialog {
 		/**
 		 * abort button
 		 */
-		abortButton = new JButton("Cancel");
+		abortButton = new JButton(i.getString("cancel"));
 		abortButton.addKeyListener(returnKeyListener);
 		abortButton.setPreferredSize(new Dimension(150, 30));
 		abortButton.addActionListener(new ActionListener() {
@@ -119,7 +120,7 @@ public class ConnectionDialog extends JDialog {
 		/**
 		 * textfield for host
 		 */
-		hostAddressLabel = new JLabel("Server");
+		hostAddressLabel = new JLabel(i.getString("server"));
 		hostAddressLabel.setLabelFor(hostAddress);
 		hostAddress = new JTextField("http://localhost");
 		hostAddress.addKeyListener(returnKeyListener);
@@ -138,7 +139,7 @@ public class ConnectionDialog extends JDialog {
 		/**
 		 * textfield for the port
 		 */
-		portNumberLabel = new JLabel("Port");
+		portNumberLabel = new JLabel(i.getString("port"));
 		portNumberLabel.setLabelFor(portNumber);
 		portNumber = new JTextField("8080");
 		portNumber.addKeyListener(returnKeyListener);
@@ -157,7 +158,7 @@ public class ConnectionDialog extends JDialog {
 		/**
 		 * textfield for the username
 		 */
-		userNameLabel = new JLabel("User");
+		userNameLabel = new JLabel(i.getString("user"));
 		userNameLabel.setLabelFor(userName);
 		userName = new JTextField("test");
 		userName.addKeyListener(returnKeyListener);
@@ -176,7 +177,7 @@ public class ConnectionDialog extends JDialog {
 		/**
 		 * password field
 		 */
-		passWordLabel = new JLabel("Password");
+		passWordLabel = new JLabel(i.getString("password"));
 		passWordLabel.setLabelFor(passWord);
 		passWord = new JPasswordField("test");
 		passWord.addKeyListener(returnKeyListener);
@@ -234,13 +235,14 @@ public class ConnectionDialog extends JDialog {
 	}
 
 	private void connect() {
+		I18n i = I18n.getInstance();
 		short port;
 		ServerConnection sc;
 		try {
 			port = Short.parseShort(this.portNumber.getText());
 		} catch (NumberFormatException e) {
-			JOptionPane
-					.showMessageDialog(this, "The port number is incorrect.");
+			JOptionPane.showMessageDialog(this,
+					i.getString("incorrectPortNumber"));
 			return;
 		}
 		try {
@@ -248,18 +250,17 @@ public class ConnectionDialog extends JDialog {
 					this.userName.getText(), String.valueOf(this.passWord
 							.getPassword()), port);
 		} catch (MalformedURLException e) {
-			JOptionPane.showMessageDialog(this,
-					"This is not an URL.\n" + e.getMessage());
+			JOptionPane.showMessageDialog(this, i.getString("notAnURL") + "\n"
+					+ e.getMessage());
 			return;
 		}
 		try {
 			ClientMain.setServerConnection(sc);
 		} catch (IncompatibleApiVersionException e) {
-			JOptionPane.showMessageDialog(this,
-					"API of CloudRAID server not supported by this client.");
+			JOptionPane.showMessageDialog(this, i.getString("apiVersionError"));
 			return;
 		} catch (IOException e) {
-			JOptionPane.showMessageDialog(this, "No connection to server.");
+			JOptionPane.showMessageDialog(this, i.getString("connectionError"));
 			return;
 		}
 		this.dispose();

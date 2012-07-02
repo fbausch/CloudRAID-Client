@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+	<entry key="mainWindowTitle">CloudRAID Client GUI</entry>
+	<entry key="fileActions">File Actions</entry>
+	<entry key="delete">Delete</entry>
+	<entry key="download">Download</entry>
+	<entry key="mainMenuTitle">CloudRAID</entry>
+	<entry key="connect">Connect</entry>
+	<entry key="createUser">Create user</entry>
+	<entry key="disconnect">Disconnect</entry>
+	<entry key="quit">Quit</entry>
+	<entry key="upload">Upload a file</entry>
+	<entry key="refresh">Refresh list</entry>
+	<entry key="name">Name</entry>
+	<entry key="state">State</entry>
+	<entry key="date">Date</entry>
+	<entry key="exitConfirmationQuestion">Are you sure to close the CloudRAID client?</entry>
+	<entry key="exitConfirmationTitle">Confirm exit</entry>
+	<entry key="connectionError">Error while connecting to the server.</entry>
+	<entry key="connectionDialogTitle">Connection</entry>
+	<entry key="cancel">Cancel</entry>
+	<entry key="server">Server</entry>
+	<entry key="user">User</entry>
+	<entry key="password">Password</entry>
+	<entry key="incorrectPortNumber">The port number is incorrect.</entry>
+	<entry key="notAnURL">This is not an URL.</entry>
+	<entry key="apiVersionError">API of CloudRAID server not supported by this client.</entry>
+	<entry key="notMatchingPasswords">Passwords do not match.</entry>
+	<entry key="userCreationDialogTitle">User Creation</entry>
+	<entry key="create">Create</entry>
+</properties>

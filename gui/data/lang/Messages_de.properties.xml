@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+	<entry key="mainWindowTitle">CloudRAID Client GUI</entry>
+	<entry key="fileActions">Datei-Operationen</entry>
+	<entry key="delete">Löschen</entry>
+	<entry key="download">Herunterladen</entry>
+	<entry key="mainMenuTitle">CloudRAID</entry>
+	<entry key="connect">Verbinden</entry>
+	<entry key="createUser">Nutzer erstellen</entry>
+	<entry key="disconnect">Verbindung trennen</entry>
+	<entry key="quit">Beenden</entry>
+	<entry key="upload">Datei hochladen</entry>
+	<entry key="refresh">Liste neuladen</entry>
+	<entry key="name">Name</entry>
+	<entry key="state">Status</entry>
+	<entry key="date">Datum</entry>
+	<entry key="exitConfirmationQuestion">Möchten Sie den CloudRAID Client wirklich verlassen?</entry>
+	<entry key="exitConfirmationTitle">Verlassen bestätigen</entry>
+	<entry key="connectionError">Ein Fehler trat beim Verbinden zum Server auf.</entry>
+	<entry key="connectionDialogTitle">Verbindung</entry>
+	<entry key="cancel">Abbrechen</entry>
+	<entry key="server">Server</entry>
+	<entry key="port">Port</entry>
+	<entry key="user">Nutzer</entry>
+	<entry key="password">Passwort</entry>
+	<entry key="incorrectPortNumber">Die Port-Nummer ist ungültig</entry>
+	<entry key="notAnURL">Das ist keine URL.</entry>
+	<entry key="apiVersionError">Die API-Version des CloudRAID-Servers wird nicht von diesem Client unterstützt.</entry>
+	<entry key="notMatchingPasswords">Die Passwörter stimmen nicht überein.</entry>
+	<entry key="userCreationDialogTitle">Nutzer erstellen</entry>
+	<entry key="create">Erstellen</entry>
+</properties>
