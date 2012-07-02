@@ -221,7 +221,18 @@ public class CLIMain {
 						System.out.println("Invalid syntax.");
 					} else {
 						try {
-							sc.getFile(commands[1], new File(commands[1]));
+							boolean found = false;
+							for (CloudFile file : sc.getFileList()) {
+								if (file.getName().equals(commands[1])) {
+									file.downloadTo(new File(commands[1]));
+									found = true;
+									break;
+								}
+							}
+							if (!found) {
+								System.err
+										.println("File not found in file list.");
+							}
 						} catch (HTTPException e) {
 							System.out.println(e.getHTTPCode() + ": "
 									+ e.getHTTPErrorMessage());
