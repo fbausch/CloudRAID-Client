@@ -1,3 +1,9 @@
+/*
+ * This class is a modified version of pxchat's I18n class.
+ * https://github.com/Markush2010/pxchat/blob/master/src/pxchat/gui/I18n.java
+ * 
+ * Creative Commons BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+ */
 package de.dhbw_mannheim.cloudraid.client.gui;
 
 import java.io.File;
@@ -38,7 +44,7 @@ public final class I18n {
 	 * Constructs a new I18n object.
 	 */
 	private I18n() {
-		setLocale(Locale.getDefault());
+		setLocale(null);
 	}
 
 	/**
