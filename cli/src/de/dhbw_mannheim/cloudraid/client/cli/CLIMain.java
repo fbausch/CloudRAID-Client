@@ -158,7 +158,12 @@ public class CLIMain {
 				} // Check for list command
 				else if ("list".equals(command)) {
 					try {
-						for (CloudFile file : sc.getFileList()) {
+						Vector<CloudFile> list = sc.getFileList();
+						if (list.size() == 0) {
+							System.out
+									.println("There are no files on the CloudRAID server.");
+						}
+						for (CloudFile file : list) {
 							System.out.println(file.getName() + " ("
 									+ file.getHashedName() + "), "
 									+ file.getState() + ", "
@@ -263,7 +268,7 @@ public class CLIMain {
 			CLIMain.interactive();
 			System.exit(0);
 		} catch (IncompatibleApiVersionException e) {
-			e.printStackTrace();
+			System.out.println("Incompatible API version.");
 			System.exit(1);
 		}
 	}

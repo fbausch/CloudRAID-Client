@@ -77,6 +77,8 @@ public class ServerConnector {
 	private static final String USER = "X-Username", PASSW = "X-Password",
 			CONTENT_LENGTH = "Content-Length", CONFIRM = "X-Confirm";
 
+	private static final String POWERED_BY = "X-Powered-By";
+
 	/**
 	 * Restores the session data from a file.
 	 * 
@@ -636,33 +638,16 @@ public class ServerConnector {
 	 */
 	private boolean validateApi() throws IOException {
 		HttpURLConnection con = null;
-		BufferedReader br = null;
+		con = (HttpURLConnection) sc.getURL("/api/info/").openConnection();
+		con.setRequestMethod(GET);
+		con.setDoInput(true);
 		try {
-			con = (HttpURLConnection) sc.getURL("/api/info/").openConnection();
-			con.setRequestMethod(GET);
-			con.setDoInput(true);
 			con.connect();
-			br = new BufferedReader(new InputStreamReader(con.getInputStream()));
-			String line;
-			while ((line = br.readLine()) != null) {
-				if (line.startsWith("Version:")) {
-					return line.substring(8).equals(API_VERSION);
-				}
-			}
+			String apiVersion = con.getHeaderField(POWERED_BY);
+			String wantedVersion = "CloudRAID/" + API_VERSION;
+			return apiVersion.equals(wantedVersion);
 		} finally {
-			try {
-				if (br != null)
-					br.close();
-			} catch (IOException ignore) {
-			}
-			if (con != null) {
-				try {
-					con.getInputStream().close();
-				} catch (IOException ignore) {
-				}
-				con.disconnect();
-			}
+			con.disconnect();
 		}
-		return false;
 	}
 }
