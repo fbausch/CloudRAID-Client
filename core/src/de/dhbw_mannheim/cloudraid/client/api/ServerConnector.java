@@ -182,7 +182,6 @@ public class ServerConnector {
 		try {
 			switch (con.getResponseCode()) {
 			case 200:
-				System.out.println("changePW: success");
 				break;
 			case 400:
 				throw new HTTPException(400,
@@ -225,7 +224,6 @@ public class ServerConnector {
 		try {
 			switch (con.getResponseCode()) {
 			case 200:
-				System.out.println("createUser: successful");
 				break;
 			case 400:
 				throw new HTTPException(400,
@@ -260,7 +258,6 @@ public class ServerConnector {
 		try {
 			switch (con.getResponseCode()) {
 			case 200:
-				System.out.println("delete: success");
 				break;
 			case 401:
 				throw new HTTPException(401, "delete: " + HTTP401);
@@ -305,16 +302,13 @@ public class ServerConnector {
 		try {
 			switch (con.getResponseCode()) {
 			case 200:
-				System.out.println("get: success");
 				is = con.getInputStream();
 				os = new FileOutputStream(destination);
 				byte[] buf = new byte[4096];
-				int len,
-				sum = 0;
+				int len;
 				try {
 					while ((len = is.read(buf)) != -1) {
 						os.write(buf, 0, len);
-						sum += len;
 					}
 				} finally {
 					try {
@@ -326,7 +320,6 @@ public class ServerConnector {
 					} catch (IOException ignore) {
 					}
 				}
-				System.out.println("get: read " + sum + " bytes");
 				break;
 			case 401:
 				throw new HTTPException(401, "get: " + HTTP401);
@@ -366,11 +359,9 @@ public class ServerConnector {
 
 			switch (con.getResponseCode()) {
 			case 200:
-				System.out.println("list: successful");
 				br = new BufferedReader(new InputStreamReader(
 						con.getInputStream()));
 				String line;
-				System.out.println("File list:");
 				while ((line = br.readLine()) != null) {
 					if ("".equals(line) || line.length() < 3) {
 						continue;
@@ -385,7 +376,6 @@ public class ServerConnector {
 						parts[i] = parts[i].replaceAll("&quot;", "\"")
 								.replaceAll("&amp;", "&");
 					}
-					System.out.println(line);
 					Date date;
 					try {
 						date = CLOUDRAID_DATE_FORMAT.parse(parts[2]);
@@ -441,13 +431,11 @@ public class ServerConnector {
 		try {
 			switch (con.getResponseCode()) {
 			case 202:
-				System.out.println("login: success");
 				for (String s : con.getHeaderField(SET_COOKIE).split(";")) {
 					if (s.startsWith("JSESSIONID=")) {
 						session = s;
 					}
 				}
-				System.out.println(session);
 				break;
 			case 403:
 				throw new HTTPException(403, "login: pw/user wrong");
@@ -483,7 +471,6 @@ public class ServerConnector {
 			switch (con.getResponseCode()) {
 			case 200:
 				removeSession();
-				System.out.println("logout: success");
 				break;
 			case 401:
 				removeSession();
@@ -525,14 +512,12 @@ public class ServerConnector {
 		String u = update ? "/update/" : "/";
 		HttpURLConnection con = (HttpURLConnection) sc.getURL(
 				"/file/" + path + u).openConnection();
-		System.out.println(con.getURL().toString());
 		con.setRequestMethod(PUT);
 		con.setRequestProperty(COOKIE, session);
 		con.setRequestProperty(CONTENT_LENGTH, String.valueOf(inFile.length()));
 		con.setDoOutput(true);
 		con.connect();
 		InputStream is = new FileInputStream(inFile);
-		System.out.println("put: start uploading " + path);
 		OutputStream os = con.getOutputStream();
 		try {
 			byte[] buf = new byte[4096];
@@ -543,7 +528,6 @@ public class ServerConnector {
 			os.close();
 			switch (con.getResponseCode()) {
 			case 201:
-				System.out.println("put: upload done");
 				break;
 			case 401:
 				throw new HTTPException(401, "put: " + HTTP401);
