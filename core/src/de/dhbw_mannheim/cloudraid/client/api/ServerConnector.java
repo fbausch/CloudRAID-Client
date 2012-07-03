@@ -72,12 +72,12 @@ public class ServerConnector {
 			HTTP406 = "already logged in", HTTP409 = "conflict",
 			HTTP411 = "content-length required",
 			HTTP503 = "session does not exist", HTTP_UNKNOWN = "unknown error";
+	private static final String POWERED_BY = "X-Powered-By";
+
 	private static final String SET_COOKIE = "Set-Cookie", COOKIE = "Cookie";
 
 	private static final String USER = "X-Username", PASSW = "X-Password",
 			CONTENT_LENGTH = "Content-Length", CONFIRM = "X-Confirm";
-
-	private static final String POWERED_BY = "X-Powered-By";
 
 	/**
 	 * Restores the session data from a file.
@@ -278,6 +278,41 @@ public class ServerConnector {
 		} finally {
 			con.disconnect();
 		}
+	}
+
+	/**
+	 * Returns information about the CloudRAID server.
+	 * 
+	 * @return The information.
+	 * @throws IOException
+	 * @throws HTTPException
+	 */
+	public String getApiInfo() throws IOException, HTTPException {
+		HttpURLConnection con = null;
+		con = (HttpURLConnection) sc.getURL("/api/info/").openConnection();
+		con.setRequestMethod(GET);
+		con.setDoInput(true);
+		InputStream is = null;
+		StringBuilder sb = new StringBuilder();
+		try {
+			con.connect();
+			if (con.getResponseCode() != 200) {
+				throw new HTTPException(con.getResponseCode(), HTTP_UNKNOWN);
+			}
+			is = con.getInputStream();
+			int c;
+			while ((c = is.read()) != -1) {
+				sb.append((char) c);
+			}
+		} finally {
+			try {
+				if (is != null)
+					is.close();
+			} catch (IOException ignore) {
+			}
+			con.disconnect();
+		}
+		return sb.toString();
 	}
 
 	/**

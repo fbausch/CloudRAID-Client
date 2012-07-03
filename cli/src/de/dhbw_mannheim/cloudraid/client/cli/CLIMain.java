@@ -208,7 +208,8 @@ public class CLIMain {
 				else if (command.startsWith("update ")) {
 					upload(command.split(" ", 3), true, sc);
 				} // Check for deletion of file {
-				else if (command.startsWith("delete ")) {
+				else if (command.startsWith("delete ")
+						|| command.startsWith("rm ")) {
 					commands = command.split(" ", 2);
 					if (commands.length != 2) {
 						System.out.println("Invalid syntax.");
@@ -241,6 +242,16 @@ public class CLIMain {
 						sc.changePassword(pw, pw2);
 					} catch (IOException e) {
 						System.out.println("Could not change password.");
+					} catch (HTTPException e) {
+						System.out.println(e.getHTTPCode() + ": "
+								+ e.getHTTPErrorMessage());
+					}
+				} // Check for server information
+				else if ("server".equals(command)) {
+					try {
+						System.out.println(sc.getApiInfo());
+					} catch (IOException e) {
+						System.out.println("Could not connect to server.");
 					} catch (HTTPException e) {
 						System.out.println(e.getHTTPCode() + ": "
 								+ e.getHTTPErrorMessage());
@@ -310,7 +321,7 @@ public class CLIMain {
 				.println("  - lists all files of the current user on the server.\n");
 		System.out.println("* get <filename>");
 		System.out.println("  - downloads a file from the server.\n");
-		System.out.println("* delete <filename>");
+		System.out.println("* delete|rm <filename>");
 		System.out.println("  - deletes a file on the server.\n");
 		System.out.println("* put <filename> <path_to_file>");
 		System.out.println("  - uploads a file to the server.\n");
@@ -319,7 +330,9 @@ public class CLIMain {
 				.println("  - uploads _and_ overwrites a file on the server.\n");
 		System.out.println("* changepw");
 		System.out
-				.println("  - changes the password for the user currently logged in.");
+				.println("  - changes the password for the user currently logged in.\n");
+		System.out.println("* server");
+		System.out.println("  - prints server information.");
 	}
 
 	/**
