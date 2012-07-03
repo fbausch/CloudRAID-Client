@@ -40,6 +40,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 
 import de.dhbw_mannheim.cloudraid.client.api.CloudFile;
@@ -81,42 +82,65 @@ public class MainWindow extends JFrame implements DataPresenter {
 		deleteItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				ServerConnector sc = ClientMain.getServerConnector();
-				if (sc != null) {
-					System.out.println("delete: " + clickedCloudFile);
-					try {
-						clickedCloudFile.delete();
-						sc.getFileList();
-					} catch (IOException e1) {
-						MainWindow.this.showError(e1);
-					} catch (HTTPException e1) {
-						MainWindow.this.showError(e1);
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						ServerConnector sc = ClientMain.getServerConnector();
+						if (sc != null) {
+							System.out.println("delete: " + clickedCloudFile);
+							try {
+								I18n i = I18n.getInstance();
+								clickedCloudFile.delete();
+								JOptionPane.showMessageDialog(MainWindow.this,
+										i.getString("deletionSuccessMessage")
+												+ clickedCloudFile.getName(),
+										i.getString("success"),
+										JOptionPane.INFORMATION_MESSAGE);
+								sc.getFileList();
+							} catch (IOException e1) {
+								MainWindow.this.showError(e1);
+							} catch (HTTPException e1) {
+								MainWindow.this.showError(e1);
+							}
+						}
 					}
-				}
-			}
+				});
+			};
 		});
 		downloadItem = new JMenuItem(i.getString("download"));
 		downloadItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				JFileChooser fc = new JFileChooser();
-				int state = fc.showSaveDialog(MainWindow.this);
-				if (state != JFileChooser.APPROVE_OPTION) {
-					return;
-				}
-				ServerConnector sc = ClientMain.getServerConnector();
-				if (sc != null) {
-					System.out.println("download: " + clickedCloudFile);
-					try {
-						System.out.println(fc.getSelectedFile()
-								.getAbsolutePath());
-						clickedCloudFile.downloadTo(fc.getSelectedFile());
-					} catch (IOException e1) {
-						MainWindow.this.showError(e1);
-					} catch (HTTPException e1) {
-						MainWindow.this.showError(e1);
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						JFileChooser fc = new JFileChooser();
+						int state = fc.showSaveDialog(MainWindow.this);
+						if (state != JFileChooser.APPROVE_OPTION) {
+							return;
+						}
+						ServerConnector sc = ClientMain.getServerConnector();
+						if (sc != null) {
+							System.out.println("download: " + clickedCloudFile);
+							try {
+								I18n i = I18n.getInstance();
+								System.out.println(fc.getSelectedFile()
+										.getAbsolutePath());
+								clickedCloudFile.downloadTo(fc
+										.getSelectedFile());
+								JOptionPane.showMessageDialog(MainWindow.this,
+										i.getString("downloadSuccessMessage")
+												+ clickedCloudFile.getName(),
+										i.getString("success"),
+										JOptionPane.INFORMATION_MESSAGE);
+							} catch (IOException e1) {
+								MainWindow.this.showError(e1);
+							} catch (HTTPException e1) {
+								MainWindow.this.showError(e1);
+							}
+						}
 					}
-				}
+				});
 			}
 		});
 		popup.add(deleteItem);
@@ -276,7 +300,7 @@ public class MainWindow extends JFrame implements DataPresenter {
 		menuBar.add(uploadItem);
 		menuBar.add(refreshItem);
 
-		Object[][] content = new Object[][] { { "", "", "", "" } };
+		Object[][] content = new Object[][] { { "", "", "", null } };
 
 		DefaultTableModel model = new DefaultTableModel(content, HEADINGS);
 		table = new JTable(model) {
@@ -313,9 +337,12 @@ public class MainWindow extends JFrame implements DataPresenter {
 				if (row < 0) {
 					return;
 				}
-				CloudFile file = (CloudFile) MainWindow.this.table.getModel()
+				Object o = MainWindow.this.table.getModel()
 						.getValueAt(row, 3);
-				if ("".equals(file)) {
+				CloudFile file;
+				if (o != null) {
+					file = (CloudFile) o;
+				} else {
 					return;
 				}
 				MainWindow.this.clickedCloudFile = file;
@@ -339,7 +366,7 @@ public class MainWindow extends JFrame implements DataPresenter {
 	 * Removes all data from the table containing the file list.
 	 */
 	private void emptyTable() {
-		this.refreshTable(new Object[][] { { "", "", "", "" } });
+		this.refreshTable(new Object[][] { { "", "", "", null } });
 	}
 
 	/**

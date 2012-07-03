@@ -30,4 +30,7 @@
 	<entry key="notMatchingPasswords">Passwords do not match.</entry>
 	<entry key="userCreationDialogTitle">User Creation</entry>
 	<entry key="create">Create</entry>
+	<entry key="deletionSuccessMessage">Successfully deleted the file </entry>
+	<entry key="downloadSuccessMessage">Successfully received the file </entry>
+	<entry key="success">Success</entry>
 </properties>

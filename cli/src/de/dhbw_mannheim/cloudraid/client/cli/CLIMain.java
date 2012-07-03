@@ -65,20 +65,17 @@ public class CLIMain {
 				while (true) {
 					if (sc != null) {
 						try {
+							Thread.sleep(1000L * 60 * 60);
+						} catch (InterruptedException e) {
+						}
+						try {
 							fileList = sc.getFileList();
-							System.out.println("Lister got file list.");
 						} catch (IOException ignore) {
 						} catch (HTTPException ignore) {
 						} catch (NullPointerException ignore) {
 						}
 					} else {
-						System.out.println("Stopped lister.");
 						return;
-					}
-					try {
-						Thread.sleep(1000L * 60 * 60);
-					} catch (InterruptedException e) {
-						System.out.println("Lister interrupted.");
 					}
 				}
 			}
@@ -183,7 +180,7 @@ public class CLIMain {
 							boolean found = false;
 							for (CloudFile file : fileList) {
 								if (file.getName().equals(commands[1])) {
-									file.downloadTo(new File(commands[1]));
+									file.downloadTo(new File("./" + commands[1]));
 									found = true;
 									break;
 								}

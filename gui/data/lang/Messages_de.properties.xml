@@ -30,4 +30,7 @@
 	<entry key="notMatchingPasswords">Die Passwörter stimmen nicht überein.</entry>
 	<entry key="userCreationDialogTitle">Nutzer erstellen</entry>
 	<entry key="create">Erstellen</entry>
+	<entry key="deletionSuccessMessage">Datei erfolgreich gelöscht: </entry>
+	<entry key="downloadSuccessMessage">Datei erflogreich heruntergeladen: </entry>
+	<entry key="success">Bestätigung</entry>
 </properties>
