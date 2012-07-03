@@ -21,6 +21,7 @@
 	<entry key="connectionDialogTitle">Connection</entry>
 	<entry key="cancel">Cancel</entry>
 	<entry key="server">Server</entry>
+	<entry key="port">Port</entry>
 	<entry key="user">User</entry>
 	<entry key="password">Password</entry>
 	<entry key="incorrectPortNumber">The port number is incorrect.</entry>
