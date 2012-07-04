@@ -41,6 +41,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
+import javax.swing.WindowConstants;
 
 import de.dhbw_mannheim.cloudraid.client.api.IncompatibleApiVersionException;
 import de.dhbw_mannheim.cloudraid.client.api.ServerConnection;
@@ -62,7 +63,7 @@ public class ConnectionDialog extends JDialog {
 		@Override
 		public void keyPressed(KeyEvent e) {
 			if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-				if (e.getSource() != abortButton) {
+				if (e.getSource() != ConnectionDialog.this.abortButton) {
 					ConnectionDialog.this.connect();
 				} else {
 					ConnectionDialog.this.abort();
@@ -85,7 +86,7 @@ public class ConnectionDialog extends JDialog {
 		super(parent, I18n.getInstance().getString("connectionDialogTitle"));
 		I18n i = I18n.getInstance();
 		this.setModalityType(ModalityType.APPLICATION_MODAL);
-		this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+		this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		this.setResizable(false);
 		JPanel panel = new JPanel();
 		panel.setLayout(new GridLayout(5, 2, 10, 10));
@@ -94,10 +95,10 @@ public class ConnectionDialog extends JDialog {
 		/**
 		 * connect button
 		 */
-		connectButton = new JButton(i.getString("connect"));
-		connectButton.addKeyListener(returnKeyListener);
-		connectButton.setPreferredSize(new Dimension(150, 30));
-		connectButton.addActionListener(new ActionListener() {
+		this.connectButton = new JButton(i.getString("connect"));
+		this.connectButton.addKeyListener(this.returnKeyListener);
+		this.connectButton.setPreferredSize(new Dimension(150, 30));
+		this.connectButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				ConnectionDialog.this.connect();
@@ -107,10 +108,10 @@ public class ConnectionDialog extends JDialog {
 		/**
 		 * abort button
 		 */
-		abortButton = new JButton(i.getString("cancel"));
-		abortButton.addKeyListener(returnKeyListener);
-		abortButton.setPreferredSize(new Dimension(150, 30));
-		abortButton.addActionListener(new ActionListener() {
+		this.abortButton = new JButton(i.getString("cancel"));
+		this.abortButton.addKeyListener(this.returnKeyListener);
+		this.abortButton.setPreferredSize(new Dimension(150, 30));
+		this.abortButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				ConnectionDialog.this.abort();
@@ -120,11 +121,11 @@ public class ConnectionDialog extends JDialog {
 		/**
 		 * textfield for host
 		 */
-		hostAddressLabel = new JLabel(i.getString("server"));
-		hostAddressLabel.setLabelFor(hostAddress);
-		hostAddress = new JTextField("http://localhost");
-		hostAddress.addKeyListener(returnKeyListener);
-		hostAddress.addFocusListener(new FocusListener() {
+		this.hostAddressLabel = new JLabel(i.getString("server"));
+		this.hostAddressLabel.setLabelFor(this.hostAddress);
+		this.hostAddress = new JTextField("http://localhost");
+		this.hostAddress.addKeyListener(this.returnKeyListener);
+		this.hostAddress.addFocusListener(new FocusListener() {
 			@Override
 			public void focusGained(FocusEvent arg0) {
 				ConnectionDialog.this.hostAddress.selectAll();
@@ -139,11 +140,11 @@ public class ConnectionDialog extends JDialog {
 		/**
 		 * textfield for the port
 		 */
-		portNumberLabel = new JLabel(i.getString("port"));
-		portNumberLabel.setLabelFor(portNumber);
-		portNumber = new JTextField("8080");
-		portNumber.addKeyListener(returnKeyListener);
-		portNumber.addFocusListener(new FocusListener() {
+		this.portNumberLabel = new JLabel(i.getString("port"));
+		this.portNumberLabel.setLabelFor(this.portNumber);
+		this.portNumber = new JTextField("8080");
+		this.portNumber.addKeyListener(this.returnKeyListener);
+		this.portNumber.addFocusListener(new FocusListener() {
 			@Override
 			public void focusGained(FocusEvent arg0) {
 				ConnectionDialog.this.portNumber.selectAll();
@@ -158,11 +159,11 @@ public class ConnectionDialog extends JDialog {
 		/**
 		 * textfield for the username
 		 */
-		userNameLabel = new JLabel(i.getString("user"));
-		userNameLabel.setLabelFor(userName);
-		userName = new JTextField("test");
-		userName.addKeyListener(returnKeyListener);
-		userName.addFocusListener(new FocusListener() {
+		this.userNameLabel = new JLabel(i.getString("user"));
+		this.userNameLabel.setLabelFor(this.userName);
+		this.userName = new JTextField("test");
+		this.userName.addKeyListener(this.returnKeyListener);
+		this.userName.addFocusListener(new FocusListener() {
 			@Override
 			public void focusGained(FocusEvent arg0) {
 				ConnectionDialog.this.userName.selectAll();
@@ -177,16 +178,16 @@ public class ConnectionDialog extends JDialog {
 		/**
 		 * password field
 		 */
-		passWordLabel = new JLabel(i.getString("password"));
-		passWordLabel.setLabelFor(passWord);
-		passWord = new JPasswordField("test");
-		passWord.addKeyListener(returnKeyListener);
-		passWord.addKeyListener(new KeyListener() {
+		this.passWordLabel = new JLabel(i.getString("password"));
+		this.passWordLabel.setLabelFor(this.passWord);
+		this.passWord = new JPasswordField("test");
+		this.passWord.addKeyListener(this.returnKeyListener);
+		this.passWord.addKeyListener(new KeyListener() {
 			@Override
 			public void keyPressed(KeyEvent e) {
 				if (e.getKeyCode() == KeyEvent.VK_BACK_SPACE
 						&& e.isControlDown()) {
-					passWord.setText("");
+					ConnectionDialog.this.passWord.setText("");
 				}
 			}
 
@@ -198,7 +199,7 @@ public class ConnectionDialog extends JDialog {
 			public void keyTyped(KeyEvent e) {
 			}
 		});
-		passWord.addFocusListener(new FocusListener() {
+		this.passWord.addFocusListener(new FocusListener() {
 			@Override
 			public void focusGained(FocusEvent arg0) {
 				ConnectionDialog.this.passWord.selectAll();
@@ -210,16 +211,16 @@ public class ConnectionDialog extends JDialog {
 			}
 		});
 
-		panel.add(hostAddressLabel);
-		panel.add(hostAddress);
-		panel.add(portNumberLabel);
-		panel.add(portNumber);
-		panel.add(userNameLabel);
-		panel.add(userName);
-		panel.add(passWordLabel);
-		panel.add(passWord);
-		panel.add(connectButton);
-		panel.add(abortButton);
+		panel.add(this.hostAddressLabel);
+		panel.add(this.hostAddress);
+		panel.add(this.portNumberLabel);
+		panel.add(this.portNumber);
+		panel.add(this.userNameLabel);
+		panel.add(this.userName);
+		panel.add(this.passWordLabel);
+		panel.add(this.passWord);
+		panel.add(this.connectButton);
+		panel.add(this.abortButton);
 
 		this.getContentPane().add(panel);
 

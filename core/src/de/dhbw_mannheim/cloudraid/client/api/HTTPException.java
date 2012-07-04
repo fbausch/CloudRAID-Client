@@ -37,10 +37,10 @@ public class HTTPException extends Exception {
 	}
 
 	public int getHTTPCode() {
-		return code;
+		return this.code;
 	}
 
 	public String getHTTPErrorMessage() {
-		return msg;
+		return this.msg;
 	}
 }

@@ -42,43 +42,12 @@ public class ClientMain {
 	private static MainWindow mainWindow = null;
 
 	/**
-	 * Set a new {@link ServerConnection} for this application.
-	 * 
-	 * @param sc
-	 *            A {@link ServerConnection}.
-	 * @throws IncompatibleApiVersionException
-	 * @throws IOException 
-	 */
-	public static synchronized void setServerConnection(ServerConnection sc)
-			throws IncompatibleApiVersionException, IOException {
-		ClientMain.serverConnection = sc;
-		try {
-			ClientMain.serverConnector = new ServerConnector(sc, mainWindow);
-		} catch (IncompatibleApiVersionException e) {
-			ClientMain.resetServerConnection();
-			throw e;
-		} catch (IOException e) {
-			ClientMain.resetServerConnection();
-			throw e;
-		}
-	}
-
-	/**
 	 * Get the current {@link ServerConnection}.
 	 * 
 	 * @return A {@link ServerConnection}.
 	 */
 	public static synchronized ServerConnection getServerConnection() {
 		return ClientMain.serverConnection;
-	}
-
-	/**
-	 * Reset the {@link ServerConnection}. You will have to set a new one before
-	 * executing the {@link #getServerConnector()} method.
-	 */
-	public static synchronized void resetServerConnection() {
-		ClientMain.serverConnection = null;
-		ClientMain.serverConnector = null;
 	}
 
 	/**
@@ -99,6 +68,38 @@ public class ClientMain {
 	 */
 	public static void main(String[] args) {
 		ClientMain.mainWindow = new MainWindow();
+	}
+
+	/**
+	 * Reset the {@link ServerConnection}. You will have to set a new one before
+	 * executing the {@link #getServerConnector()} method.
+	 */
+	public static synchronized void resetServerConnection() {
+		ClientMain.serverConnection = null;
+		ClientMain.serverConnector = null;
+	}
+
+	/**
+	 * Set a new {@link ServerConnection} for this application.
+	 * 
+	 * @param sc
+	 *            A {@link ServerConnection}.
+	 * @throws IncompatibleApiVersionException
+	 * @throws IOException
+	 */
+	public static synchronized void setServerConnection(ServerConnection sc)
+			throws IncompatibleApiVersionException, IOException {
+		ClientMain.serverConnection = sc;
+		try {
+			ClientMain.serverConnector = new ServerConnector(sc,
+					ClientMain.mainWindow);
+		} catch (IncompatibleApiVersionException e) {
+			ClientMain.resetServerConnection();
+			throw e;
+		} catch (IOException e) {
+			ClientMain.resetServerConnection();
+			throw e;
+		}
 	}
 
 }

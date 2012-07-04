@@ -92,7 +92,7 @@ public class CloudFile {
 	 * @return The hashed file name.
 	 */
 	public String getHashedName() {
-		return hashedName;
+		return this.hashedName;
 	}
 
 	/**
@@ -101,7 +101,7 @@ public class CloudFile {
 	 * @return The last modification date.
 	 */
 	public Date getLastMod() {
-		return lastMod;
+		return this.lastMod;
 	}
 
 	/**
@@ -120,7 +120,7 @@ public class CloudFile {
 	 * @return The name.
 	 */
 	public String getName() {
-		return name;
+		return this.name;
 	}
 
 	/**
@@ -129,7 +129,7 @@ public class CloudFile {
 	 * @return The {@link ServerConnector}.
 	 */
 	public ServerConnector getSc() {
-		return sc;
+		return this.sc;
 	}
 
 	/**
@@ -138,7 +138,7 @@ public class CloudFile {
 	 * @return The state.
 	 */
 	public String getState() {
-		return state;
+		return this.state;
 	}
 
 	/**
@@ -146,9 +146,10 @@ public class CloudFile {
 	 * 
 	 * @return The String representation.
 	 */
+	@Override
 	public String toString() {
-		return name + " (" + hashedName + "), updated on "
-				+ ServerConnector.CLOUDRAID_DATE_FORMAT.format(lastMod) + ", "
-				+ state + ". ServerConnector: " + sc;
+		return this.name + " (" + this.hashedName + "), updated on "
+				+ ServerConnector.CLOUDRAID_DATE_FORMAT.format(this.lastMod)
+				+ ", " + this.state + ". ServerConnector: " + this.sc;
 	}
 }

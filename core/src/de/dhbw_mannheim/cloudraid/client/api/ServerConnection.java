@@ -65,6 +65,33 @@ public class ServerConnection {
 	}
 
 	/**
+	 * Returns the user's password.
+	 * 
+	 * @return The password.
+	 */
+	protected String getPassword() {
+		return this.password;
+	}
+
+	/**
+	 * Returns the port of CloudRAID on the server.
+	 * 
+	 * @return The port.
+	 */
+	protected short getPort() {
+		return this.port;
+	}
+
+	/**
+	 * Returns the server address.
+	 * 
+	 * @return The server address.
+	 */
+	protected String getServer() {
+		return this.server;
+	}
+
+	/**
 	 * Returns a URL to a resource on the CloudRAID server.
 	 * 
 	 * @param path
@@ -73,7 +100,7 @@ public class ServerConnection {
 	 */
 	protected URL getURL(String path) {
 		try {
-			return new URL(server + ":" + port + path);
+			return new URL(this.server + ":" + this.port + path);
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 			return null;
@@ -89,35 +116,8 @@ public class ServerConnection {
 		return this.user;
 	}
 
-	/**
-	 * Returns the user's password.
-	 * 
-	 * @return The password.
-	 */
-	protected String getPassword() {
-		return this.password;
-	}
-
-	/**
-	 * Returns the server address.
-	 * 
-	 * @return The server address.
-	 */
-	protected String getServer() {
-		return this.server;
-	}
-
-	/**
-	 * Returns the port of CloudRAID on the server.
-	 * 
-	 * @return The port.
-	 */
-	protected short getPort() {
-		return this.port;
-	}
-
 	@Override
 	public String toString() {
-		return user + "@" + server + ":" + port;
+		return this.user + "@" + this.server + ":" + this.port;
 	}
 }

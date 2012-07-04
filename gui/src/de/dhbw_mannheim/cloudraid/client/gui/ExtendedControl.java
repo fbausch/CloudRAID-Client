@@ -36,48 +36,59 @@ import java.util.ResourceBundle.Control;
  * XML properties files is assumed to be *.properties.xml
  */
 public class ExtendedControl extends Control {
+	/**
+	 * ResourceBundle that loads definitions from an XML properties file.
+	 */
+	public static class PropertyXMLResourceBundle extends ResourceBundle {
+		private final Properties properties = new Properties();
+
+		@Override
+		public Enumeration<String> getKeys() {
+			final Enumeration<Object> keys = this.properties.keys();
+			return new Enumeration<String>() {
+				@Override
+				public boolean hasMoreElements() {
+					return keys.hasMoreElements();
+				}
+
+				@Override
+				public String nextElement() {
+					return (String) keys.nextElement();
+				}
+			};
+		}
+
+		@Override
+		protected Object handleGetObject(String key) {
+			return this.properties.getProperty(key);
+		}
+
+		public void load(InputStream stream) throws IOException {
+			this.properties.loadFromXML(stream);
+		}
+	}
+
 	private static final String FORMAT_XML_SUFFIX = "properties.xml";
-	private static final String FORMAT_XML = "java." + FORMAT_XML_SUFFIX;
+	private static final String FORMAT_XML = "java."
+			+ ExtendedControl.FORMAT_XML_SUFFIX;
 	private static final List<String> FORMATS;
+
 	static {
-		List<String> formats = new ArrayList<String>(FORMAT_DEFAULT);
-		formats.add(FORMAT_XML);
+		List<String> formats = new ArrayList<String>(Control.FORMAT_DEFAULT);
+		formats.add(ExtendedControl.FORMAT_XML);
 		FORMATS = Collections.unmodifiableList(formats);
 	}
 
 	@Override
 	public List<String> getFormats(String baseName) {
-		return FORMATS;
-	}
-
-	@Override
-	public ResourceBundle newBundle(String baseName, Locale locale,
-			String format, ClassLoader loader, boolean reload)
-			throws IllegalAccessException, InstantiationException, IOException {
-		if (!FORMAT_XML.equals(format))
-			return super.newBundle(baseName, locale, format, loader, reload);
-
-		String bundleName = toBundleName(baseName, locale);
-		String resourceName = toResourceName(bundleName, FORMAT_XML_SUFFIX);
-		final URL resourceURL = loader.getResource(resourceName);
-		if (resourceURL == null)
-			return null;
-
-		InputStream stream = getResourceInputStream(resourceURL, reload);
-
-		try {
-			PropertyXMLResourceBundle result = new PropertyXMLResourceBundle();
-			result.load(stream);
-			return result;
-		} finally {
-			stream.close();
-		}
+		return ExtendedControl.FORMATS;
 	}
 
 	private InputStream getResourceInputStream(final URL resourceURL,
 			boolean reload) throws IOException {
-		if (!reload)
+		if (!reload) {
 			return resourceURL.openStream();
+		}
 
 		try {
 			// This permission has already been checked by
@@ -85,6 +96,7 @@ public class ExtendedControl extends Control {
 			// in case the code has not enough privileges.
 			return AccessController
 					.doPrivileged(new PrivilegedExceptionAction<InputStream>() {
+						@Override
 						public InputStream run() throws IOException {
 							URLConnection connection = resourceURL
 									.openConnection();
@@ -97,31 +109,30 @@ public class ExtendedControl extends Control {
 		}
 	}
 
-	/**
-	 * ResourceBundle that loads definitions from an XML properties file.
-	 */
-	public static class PropertyXMLResourceBundle extends ResourceBundle {
-		private final Properties properties = new Properties();
-
-		public void load(InputStream stream) throws IOException {
-			properties.loadFromXML(stream);
+	@Override
+	public ResourceBundle newBundle(String baseName, Locale locale,
+			String format, ClassLoader loader, boolean reload)
+			throws IllegalAccessException, InstantiationException, IOException {
+		if (!ExtendedControl.FORMAT_XML.equals(format)) {
+			return super.newBundle(baseName, locale, format, loader, reload);
 		}
 
-		protected Object handleGetObject(String key) {
-			return properties.getProperty(key);
+		String bundleName = toBundleName(baseName, locale);
+		String resourceName = toResourceName(bundleName,
+				ExtendedControl.FORMAT_XML_SUFFIX);
+		final URL resourceURL = loader.getResource(resourceName);
+		if (resourceURL == null) {
+			return null;
 		}
 
-		public Enumeration<String> getKeys() {
-			final Enumeration<Object> keys = properties.keys();
-			return new Enumeration<String>() {
-				public boolean hasMoreElements() {
-					return keys.hasMoreElements();
-				}
+		InputStream stream = getResourceInputStream(resourceURL, reload);
 
-				public String nextElement() {
-					return (String) keys.nextElement();
-				}
-			};
+		try {
+			PropertyXMLResourceBundle result = new PropertyXMLResourceBundle();
+			result.load(stream);
+			return result;
+		} finally {
+			stream.close();
 		}
 	}
 }

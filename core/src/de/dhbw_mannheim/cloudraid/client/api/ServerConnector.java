@@ -89,7 +89,8 @@ public class ServerConnector {
 		BufferedReader br = null;
 		ServerConnector newCon = null;
 		try {
-			File sessionFile = new File(CLOUDRAID_HOME + "/session");
+			File sessionFile = new File(ServerConnector.CLOUDRAID_HOME
+					+ "/session");
 			br = new BufferedReader(new FileReader(sessionFile));
 			ServerConnection sc = new ServerConnection(br.readLine(),
 					br.readLine(), br.readLine(), Short.parseShort(br
@@ -173,13 +174,13 @@ public class ServerConnector {
 	 */
 	public void changePassword(String newPassword, String newPasswordConfirm)
 			throws IOException, HTTPException {
-		HttpURLConnection con = (HttpURLConnection) sc.getURL("/user/chgpw/")
-				.openConnection();
-		con.setRequestMethod(POST);
-		con.setRequestProperty(COOKIE, session);
-		con.setRequestProperty(USER, sc.getUser());
-		con.setRequestProperty(PASSW, newPassword);
-		con.setRequestProperty(CONFIRM, newPasswordConfirm);
+		HttpURLConnection con = (HttpURLConnection) this.sc.getURL(
+				"/user/chgpw/").openConnection();
+		con.setRequestMethod(ServerConnector.POST);
+		con.setRequestProperty(ServerConnector.COOKIE, this.session);
+		con.setRequestProperty(ServerConnector.USER, this.sc.getUser());
+		con.setRequestProperty(ServerConnector.PASSW, newPassword);
+		con.setRequestProperty(ServerConnector.CONFIRM, newPasswordConfirm);
 		con.connect();
 		try {
 			switch (con.getResponseCode()) {
@@ -189,17 +190,20 @@ public class ServerConnector {
 				throw new HTTPException(400,
 						"changePW: user name and/or password and/or confirmation missing/wrong");
 			case 401:
-				throw new HTTPException(401, "changePW: " + HTTP401);
+				throw new HTTPException(401, "changePW: "
+						+ ServerConnector.HTTP401);
 			case 405:
-				throw new HTTPException(401, "changePW: " + HTTP405);
+				throw new HTTPException(401, "changePW: "
+						+ ServerConnector.HTTP405);
 			case 500:
 				throw new HTTPException(500,
 						"changePW: error while updating the user record");
 			case 503:
-				throw new HTTPException(503, "changePW: " + HTTP503);
+				throw new HTTPException(503, "changePW: "
+						+ ServerConnector.HTTP503);
 			default:
 				throw new HTTPException(con.getResponseCode(), "changePW: "
-						+ HTTP_UNKNOWN);
+						+ ServerConnector.HTTP_UNKNOWN);
 			}
 		} finally {
 			con.disconnect();
@@ -216,12 +220,12 @@ public class ServerConnector {
 	 * @throws HTTPException
 	 */
 	public void createUser(String conf) throws IOException, HTTPException {
-		HttpURLConnection con = (HttpURLConnection) sc.getURL("/user/add/")
-				.openConnection();
-		con.setRequestMethod(POST);
-		con.setRequestProperty(USER, sc.getUser());
-		con.setRequestProperty(PASSW, sc.getPassword());
-		con.setRequestProperty(CONFIRM, conf);
+		HttpURLConnection con = (HttpURLConnection) this.sc
+				.getURL("/user/add/").openConnection();
+		con.setRequestMethod(ServerConnector.POST);
+		con.setRequestProperty(ServerConnector.USER, this.sc.getUser());
+		con.setRequestProperty(ServerConnector.PASSW, this.sc.getPassword());
+		con.setRequestProperty(ServerConnector.CONFIRM, conf);
 		con.connect();
 		try {
 			switch (con.getResponseCode()) {
@@ -231,12 +235,13 @@ public class ServerConnector {
 				throw new HTTPException(400,
 						"user name and/or password and/or confirmation missing/wrong");
 			case 406:
-				throw new HTTPException(406, HTTP406);
+				throw new HTTPException(406, ServerConnector.HTTP406);
 			case 500:
 				throw new HTTPException(500,
 						"error while adding user to database");
 			default:
-				throw new HTTPException(con.getResponseCode(), HTTP_UNKNOWN);
+				throw new HTTPException(con.getResponseCode(),
+						ServerConnector.HTTP_UNKNOWN);
 			}
 		} finally {
 			con.disconnect();
@@ -252,28 +257,32 @@ public class ServerConnector {
 	 * @throws HTTPException
 	 */
 	public void deleteFile(String path) throws IOException, HTTPException {
-		HttpURLConnection con = (HttpURLConnection) sc.getURL(
+		HttpURLConnection con = (HttpURLConnection) this.sc.getURL(
 				"/file/" + path + "/").openConnection();
-		con.setRequestMethod(DELETE);
-		con.setRequestProperty(COOKIE, session);
+		con.setRequestMethod(ServerConnector.DELETE);
+		con.setRequestProperty(ServerConnector.COOKIE, this.session);
 		con.connect();
 		try {
 			switch (con.getResponseCode()) {
 			case 200:
 				break;
 			case 401:
-				throw new HTTPException(401, "delete: " + HTTP401);
+				throw new HTTPException(401, "delete: "
+						+ ServerConnector.HTTP401);
 			case 404:
-				throw new HTTPException(404, "delete: " + HTTP404);
+				throw new HTTPException(404, "delete: "
+						+ ServerConnector.HTTP404);
 			case 405:
-				throw new HTTPException(405, "delete: " + HTTP405);
+				throw new HTTPException(405, "delete: "
+						+ ServerConnector.HTTP405);
 			case 500:
 				throw new HTTPException(500, "delete: error deleting the file");
 			case 503:
-				throw new HTTPException(503, "delete: " + HTTP503);
+				throw new HTTPException(503, "delete: "
+						+ ServerConnector.HTTP503);
 			default:
 				throw new HTTPException(con.getResponseCode(), "delete: "
-						+ HTTP_UNKNOWN);
+						+ ServerConnector.HTTP_UNKNOWN);
 			}
 		} finally {
 			con.disconnect();
@@ -289,15 +298,16 @@ public class ServerConnector {
 	 */
 	public String getApiInfo() throws IOException, HTTPException {
 		HttpURLConnection con = null;
-		con = (HttpURLConnection) sc.getURL("/api/info/").openConnection();
-		con.setRequestMethod(GET);
+		con = (HttpURLConnection) this.sc.getURL("/api/info/").openConnection();
+		con.setRequestMethod(ServerConnector.GET);
 		con.setDoInput(true);
 		InputStream is = null;
 		StringBuilder sb = new StringBuilder();
 		try {
 			con.connect();
 			if (con.getResponseCode() != 200) {
-				throw new HTTPException(con.getResponseCode(), HTTP_UNKNOWN);
+				throw new HTTPException(con.getResponseCode(),
+						ServerConnector.HTTP_UNKNOWN);
 			}
 			is = con.getInputStream();
 			int c;
@@ -306,8 +316,9 @@ public class ServerConnector {
 			}
 		} finally {
 			try {
-				if (is != null)
+				if (is != null) {
 					is.close();
+				}
 			} catch (IOException ignore) {
 			}
 			con.disconnect();
@@ -330,10 +341,10 @@ public class ServerConnector {
 		InputStream is = null;
 		OutputStream os = null;
 		destination.getParentFile().mkdirs();
-		HttpURLConnection con = (HttpURLConnection) sc.getURL(
+		HttpURLConnection con = (HttpURLConnection) this.sc.getURL(
 				"/file/" + path + "/").openConnection();
-		con.setRequestMethod(GET);
-		con.setRequestProperty(COOKIE, session);
+		con.setRequestMethod(ServerConnector.GET);
+		con.setRequestProperty(ServerConnector.COOKIE, this.session);
 		con.setDoInput(true);
 		con.connect();
 		try {
@@ -359,16 +370,16 @@ public class ServerConnector {
 				}
 				break;
 			case 401:
-				throw new HTTPException(401, "get: " + HTTP401);
+				throw new HTTPException(401, "get: " + ServerConnector.HTTP401);
 			case 404:
-				throw new HTTPException(404, "get: " + HTTP404);
+				throw new HTTPException(404, "get: " + ServerConnector.HTTP404);
 			case 405:
-				throw new HTTPException(405, "get: " + HTTP405);
+				throw new HTTPException(405, "get: " + ServerConnector.HTTP405);
 			case 503:
-				throw new HTTPException(503, "get: " + HTTP503);
+				throw new HTTPException(503, "get: " + ServerConnector.HTTP503);
 			default:
 				throw new HTTPException(con.getResponseCode(), "get: "
-						+ HTTP_UNKNOWN);
+						+ ServerConnector.HTTP_UNKNOWN);
 			}
 		} finally {
 			con.disconnect();
@@ -387,10 +398,10 @@ public class ServerConnector {
 	public Vector<CloudFile> getFileList() throws IOException, HTTPException {
 		Vector<CloudFile> ret = new Vector<CloudFile>();
 		BufferedReader br = null;
-		HttpURLConnection con = (HttpURLConnection) sc.getURL("/list/")
+		HttpURLConnection con = (HttpURLConnection) this.sc.getURL("/list/")
 				.openConnection();
-		con.setRequestMethod(GET);
-		con.setRequestProperty(COOKIE, session);
+		con.setRequestMethod(ServerConnector.GET);
+		con.setRequestProperty(ServerConnector.COOKIE, this.session);
 		con.connect();
 		try {
 
@@ -415,7 +426,8 @@ public class ServerConnector {
 					}
 					Date date;
 					try {
-						date = CLOUDRAID_DATE_FORMAT.parse(parts[2]);
+						date = ServerConnector.CLOUDRAID_DATE_FORMAT
+								.parse(parts[2]);
 					} catch (ParseException e) {
 						continue;
 					}
@@ -424,17 +436,17 @@ public class ServerConnector {
 				}
 				break;
 			case 401:
-				throw new HTTPException(401, "list: " + HTTP401);
+				throw new HTTPException(401, "list: " + ServerConnector.HTTP401);
 			case 405:
-				throw new HTTPException(405, "list: " + HTTP405);
+				throw new HTTPException(405, "list: " + ServerConnector.HTTP405);
 			case 500:
 				throw new HTTPException(500,
 						"list: error getting the file information");
 			case 503:
-				throw new HTTPException(503, "list: " + HTTP503);
+				throw new HTTPException(503, "list: " + ServerConnector.HTTP503);
 			default:
 				throw new HTTPException(con.getResponseCode(), "list: "
-						+ HTTP_UNKNOWN);
+						+ ServerConnector.HTTP_UNKNOWN);
 			}
 		} finally {
 			try {
@@ -443,7 +455,7 @@ public class ServerConnector {
 			}
 			con.disconnect();
 		}
-		for (DataPresenter dp : dataPresenters) {
+		for (DataPresenter dp : this.dataPresenters) {
 			dp.giveFileList(ret);
 		}
 		return ret;
@@ -459,31 +471,33 @@ public class ServerConnector {
 	 * @throws HTTPException
 	 */
 	public void login() throws IOException, HTTPException {
-		HttpURLConnection con = (HttpURLConnection) sc.getURL("/user/auth/")
-				.openConnection();
-		con.setRequestMethod(POST);
-		con.setRequestProperty(USER, sc.getUser());
-		con.setRequestProperty(PASSW, sc.getPassword());
+		HttpURLConnection con = (HttpURLConnection) this.sc.getURL(
+				"/user/auth/").openConnection();
+		con.setRequestMethod(ServerConnector.POST);
+		con.setRequestProperty(ServerConnector.USER, this.sc.getUser());
+		con.setRequestProperty(ServerConnector.PASSW, this.sc.getPassword());
 		con.connect();
 		try {
 			switch (con.getResponseCode()) {
 			case 202:
-				for (String s : con.getHeaderField(SET_COOKIE).split(";")) {
+				for (String s : con.getHeaderField(ServerConnector.SET_COOKIE)
+						.split(";")) {
 					if (s.startsWith("JSESSIONID=")) {
-						session = s;
+						this.session = s;
 					}
 				}
 				break;
 			case 403:
 				throw new HTTPException(403, "login: pw/user wrong");
 			case 406:
-				throw new HTTPException(406, "login: " + HTTP406);
+				throw new HTTPException(406, "login: "
+						+ ServerConnector.HTTP406);
 			case 503:
 				throw new HTTPException(503,
 						"login: session could not be created");
 			default:
 				throw new HTTPException(con.getResponseCode(), "login: "
-						+ HTTP_UNKNOWN);
+						+ ServerConnector.HTTP_UNKNOWN);
 			}
 		} finally {
 			con.disconnect();
@@ -499,10 +513,10 @@ public class ServerConnector {
 	 */
 	public void logout() throws IOException, HTTPException {
 		boolean resetSession = true;
-		HttpURLConnection con = (HttpURLConnection) sc.getURL(
+		HttpURLConnection con = (HttpURLConnection) this.sc.getURL(
 				"/user/auth/logout/").openConnection();
-		con.setRequestMethod(GET);
-		con.setRequestProperty(COOKIE, session);
+		con.setRequestMethod(ServerConnector.GET);
+		con.setRequestProperty(ServerConnector.COOKIE, this.session);
 		con.connect();
 		try {
 			switch (con.getResponseCode()) {
@@ -511,21 +525,24 @@ public class ServerConnector {
 				break;
 			case 401:
 				removeSession();
-				throw new HTTPException(401, "logout: " + HTTP401);
+				throw new HTTPException(401, "logout: "
+						+ ServerConnector.HTTP401);
 			case 405:
 				resetSession = false;
-				throw new HTTPException(405, "logout: " + HTTP405);
+				throw new HTTPException(405, "logout: "
+						+ ServerConnector.HTTP405);
 			case 503:
 				removeSession();
-				throw new HTTPException(503, "logout: " + HTTP503);
+				throw new HTTPException(503, "logout: "
+						+ ServerConnector.HTTP503);
 			default:
 				resetSession = false;
 				throw new HTTPException(con.getResponseCode(), "logout: "
-						+ HTTP_UNKNOWN);
+						+ ServerConnector.HTTP_UNKNOWN);
 			}
 		} finally {
 			if (resetSession) {
-				session = null;
+				this.session = null;
 			}
 			con.disconnect();
 		}
@@ -547,11 +564,12 @@ public class ServerConnector {
 	public void putFile(String path, File inFile, boolean update)
 			throws IOException, HTTPException {
 		String u = update ? "/update/" : "/";
-		HttpURLConnection con = (HttpURLConnection) sc.getURL(
+		HttpURLConnection con = (HttpURLConnection) this.sc.getURL(
 				"/file/" + path + u).openConnection();
-		con.setRequestMethod(PUT);
-		con.setRequestProperty(COOKIE, session);
-		con.setRequestProperty(CONTENT_LENGTH, String.valueOf(inFile.length()));
+		con.setRequestMethod(ServerConnector.PUT);
+		con.setRequestProperty(ServerConnector.COOKIE, this.session);
+		con.setRequestProperty(ServerConnector.CONTENT_LENGTH,
+				String.valueOf(inFile.length()));
 		con.setDoOutput(true);
 		con.connect();
 		InputStream is = new FileInputStream(inFile);
@@ -567,20 +585,20 @@ public class ServerConnector {
 			case 201:
 				break;
 			case 401:
-				throw new HTTPException(401, "put: " + HTTP401);
+				throw new HTTPException(401, "put: " + ServerConnector.HTTP401);
 			case 404:
-				throw new HTTPException(404, "put: " + HTTP404);
+				throw new HTTPException(404, "put: " + ServerConnector.HTTP404);
 			case 405:
-				throw new HTTPException(405, "put: " + HTTP405);
+				throw new HTTPException(405, "put: " + ServerConnector.HTTP405);
 			case 409:
-				throw new HTTPException(409, "put: " + HTTP409);
+				throw new HTTPException(409, "put: " + ServerConnector.HTTP409);
 			case 411:
-				throw new HTTPException(411, "put: " + HTTP411);
+				throw new HTTPException(411, "put: " + ServerConnector.HTTP411);
 			case 503:
-				throw new HTTPException(503, "put: " + HTTP503);
+				throw new HTTPException(503, "put: " + ServerConnector.HTTP503);
 			default:
 				throw new HTTPException(con.getResponseCode(), "put: "
-						+ HTTP_UNKNOWN);
+						+ ServerConnector.HTTP_UNKNOWN);
 			}
 		} finally {
 			try {
@@ -609,7 +627,7 @@ public class ServerConnector {
 	 * Removes a stored session from the file system.
 	 */
 	private void removeSession() {
-		File sessionFile = new File(CLOUDRAID_HOME + "/session");
+		File sessionFile = new File(ServerConnector.CLOUDRAID_HOME + "/session");
 		if (sessionFile.exists()) {
 			sessionFile.delete();
 		}
@@ -629,12 +647,13 @@ public class ServerConnector {
 	 * Saves the session data to a file.
 	 */
 	public void storeSession() {
-		if (session == null) {
+		if (this.session == null) {
 			return;
 		}
 		BufferedWriter bw = null;
 		try {
-			File sessionFile = new File(CLOUDRAID_HOME + "/session");
+			File sessionFile = new File(ServerConnector.CLOUDRAID_HOME
+					+ "/session");
 			sessionFile.getParentFile().mkdirs();
 			bw = new BufferedWriter(new FileWriter(sessionFile));
 			bw.write(this.sc.getServer());
@@ -661,7 +680,7 @@ public class ServerConnector {
 	@Override
 	public String toString() {
 		return "[ServerConnection: " + this.sc + "]. Stored session: "
-				+ session;
+				+ this.session;
 	}
 
 	/**
@@ -673,13 +692,13 @@ public class ServerConnector {
 	 */
 	private boolean validateApi() throws IOException {
 		HttpURLConnection con = null;
-		con = (HttpURLConnection) sc.getURL("/api/info/").openConnection();
-		con.setRequestMethod(GET);
+		con = (HttpURLConnection) this.sc.getURL("/api/info/").openConnection();
+		con.setRequestMethod(ServerConnector.GET);
 		con.setDoInput(true);
 		try {
 			con.connect();
-			String apiVersion = con.getHeaderField(POWERED_BY);
-			String wantedVersion = "CloudRAID/" + API_VERSION;
+			String apiVersion = con.getHeaderField(ServerConnector.POWERED_BY);
+			String wantedVersion = "CloudRAID/" + ServerConnector.API_VERSION;
 			return apiVersion.equals(wantedVersion);
 		} finally {
 			con.disconnect();

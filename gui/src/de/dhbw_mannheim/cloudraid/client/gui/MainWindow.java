@@ -41,6 +41,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
+import javax.swing.WindowConstants;
 import javax.swing.table.DefaultTableModel;
 
 import de.dhbw_mannheim.cloudraid.client.api.CloudFile;
@@ -70,16 +71,17 @@ public class MainWindow extends JFrame implements DataPresenter {
 		I18n i = I18n.getInstance();
 		this.setLayout(null);
 		this.setBounds(50, 50, 600, 430);
-		this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		this.addWindowListener(new WindowAdapter() {
+			@Override
 			public void windowClosing(WindowEvent e) {
 				MainWindow.this.quit();
 			}
 		});
 
-		popup = new JPopupMenu(i.getString("fileActions"));
-		deleteItem = new JMenuItem(i.getString("delete"));
-		deleteItem.addActionListener(new ActionListener() {
+		this.popup = new JPopupMenu(i.getString("fileActions"));
+		this.deleteItem = new JMenuItem(i.getString("delete"));
+		this.deleteItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				SwingUtilities.invokeLater(new Runnable() {
@@ -87,13 +89,16 @@ public class MainWindow extends JFrame implements DataPresenter {
 					public void run() {
 						ServerConnector sc = ClientMain.getServerConnector();
 						if (sc != null) {
-							System.out.println("delete: " + clickedCloudFile);
+							System.out.println("delete: "
+									+ MainWindow.this.clickedCloudFile);
 							try {
 								I18n i = I18n.getInstance();
-								clickedCloudFile.delete();
-								JOptionPane.showMessageDialog(MainWindow.this,
+								MainWindow.this.clickedCloudFile.delete();
+								JOptionPane.showMessageDialog(
+										MainWindow.this,
 										i.getString("deletionSuccessMessage")
-												+ clickedCloudFile.getName(),
+												+ MainWindow.this.clickedCloudFile
+														.getName(),
 										i.getString("success"),
 										JOptionPane.INFORMATION_MESSAGE);
 								sc.getFileList();
@@ -107,8 +112,8 @@ public class MainWindow extends JFrame implements DataPresenter {
 				});
 			};
 		});
-		downloadItem = new JMenuItem(i.getString("download"));
-		downloadItem.addActionListener(new ActionListener() {
+		this.downloadItem = new JMenuItem(i.getString("download"));
+		this.downloadItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				SwingUtilities.invokeLater(new Runnable() {
@@ -121,16 +126,19 @@ public class MainWindow extends JFrame implements DataPresenter {
 						}
 						ServerConnector sc = ClientMain.getServerConnector();
 						if (sc != null) {
-							System.out.println("download: " + clickedCloudFile);
+							System.out.println("download: "
+									+ MainWindow.this.clickedCloudFile);
 							try {
 								I18n i = I18n.getInstance();
 								System.out.println(fc.getSelectedFile()
 										.getAbsolutePath());
-								clickedCloudFile.downloadTo(fc
+								MainWindow.this.clickedCloudFile.downloadTo(fc
 										.getSelectedFile());
-								JOptionPane.showMessageDialog(MainWindow.this,
+								JOptionPane.showMessageDialog(
+										MainWindow.this,
 										i.getString("downloadSuccessMessage")
-												+ clickedCloudFile.getName(),
+												+ MainWindow.this.clickedCloudFile
+														.getName(),
 										i.getString("success"),
 										JOptionPane.INFORMATION_MESSAGE);
 							} catch (IOException e1) {
@@ -143,17 +151,17 @@ public class MainWindow extends JFrame implements DataPresenter {
 				});
 			}
 		});
-		popup.add(deleteItem);
-		popup.add(downloadItem);
+		this.popup.add(this.deleteItem);
+		this.popup.add(this.downloadItem);
 
-		menuBar = new JMenuBar();
+		this.menuBar = new JMenuBar();
 
-		fileMenu = new JMenu(i.getString("mainMenuTitle"));
-		fileMenu.setMnemonic('c');
+		this.fileMenu = new JMenu(i.getString("mainMenuTitle"));
+		this.fileMenu.setMnemonic('c');
 
-		connectItem = new JMenuItem(i.getString("connect") + "...");
-		connectItem.setMnemonic('c');
-		connectItem.addActionListener(new ActionListener() {
+		this.connectItem = new JMenuItem(i.getString("connect") + "...");
+		this.connectItem.setMnemonic('c');
+		this.connectItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				MainWindow.this.emptyTable();
@@ -184,9 +192,9 @@ public class MainWindow extends JFrame implements DataPresenter {
 			}
 		});
 
-		userCreationItem = new JMenuItem(i.getString("createUser"));
-		userCreationItem.setMnemonic('u');
-		userCreationItem.addActionListener(new ActionListener() {
+		this.userCreationItem = new JMenuItem(i.getString("createUser"));
+		this.userCreationItem.setMnemonic('u');
+		this.userCreationItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				MainWindow.this.emptyTable();
@@ -209,9 +217,9 @@ public class MainWindow extends JFrame implements DataPresenter {
 			}
 		});
 
-		disconnectItem = new JMenuItem(i.getString("disconnect"));
-		disconnectItem.setMnemonic('d');
-		disconnectItem.addActionListener(new ActionListener() {
+		this.disconnectItem = new JMenuItem(i.getString("disconnect"));
+		this.disconnectItem.setMnemonic('d');
+		this.disconnectItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
@@ -226,25 +234,25 @@ public class MainWindow extends JFrame implements DataPresenter {
 				}
 			}
 		});
-		disconnectItem.setEnabled(false);
+		this.disconnectItem.setEnabled(false);
 
-		closeItem = new JMenuItem(i.getString("quit") + "...");
-		closeItem.setMnemonic('q');
-		closeItem.addActionListener(new ActionListener() {
+		this.closeItem = new JMenuItem(i.getString("quit") + "...");
+		this.closeItem.setMnemonic('q');
+		this.closeItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				MainWindow.this.quit();
 			}
 		});
 
-		fileMenu.add(connectItem);
-		fileMenu.add(userCreationItem);
-		fileMenu.add(disconnectItem);
-		fileMenu.add(closeItem);
+		this.fileMenu.add(this.connectItem);
+		this.fileMenu.add(this.userCreationItem);
+		this.fileMenu.add(this.disconnectItem);
+		this.fileMenu.add(this.closeItem);
 
-		uploadItem = new JMenuItem(i.getString("upload"));
-		uploadItem.setMnemonic('u');
-		uploadItem.addActionListener(new ActionListener() {
+		this.uploadItem = new JMenuItem(i.getString("upload"));
+		this.uploadItem.setMnemonic('u');
+		this.uploadItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				JFileChooser fc = new JFileChooser();
@@ -275,11 +283,11 @@ public class MainWindow extends JFrame implements DataPresenter {
 				}
 			}
 		});
-		uploadItem.setEnabled(false);
+		this.uploadItem.setEnabled(false);
 
-		refreshItem = new JMenuItem(i.getString("refresh"));
-		refreshItem.setMnemonic('r');
-		refreshItem.addActionListener(new ActionListener() {
+		this.refreshItem = new JMenuItem(i.getString("refresh"));
+		this.refreshItem.setMnemonic('r');
+		this.refreshItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				ServerConnector sc = ClientMain.getServerConnector();
@@ -294,40 +302,26 @@ public class MainWindow extends JFrame implements DataPresenter {
 				}
 			}
 		});
-		refreshItem.setEnabled(false);
+		this.refreshItem.setEnabled(false);
 
-		menuBar.add(fileMenu);
-		menuBar.add(uploadItem);
-		menuBar.add(refreshItem);
+		this.menuBar.add(this.fileMenu);
+		this.menuBar.add(this.uploadItem);
+		this.menuBar.add(this.refreshItem);
 
 		Object[][] content = new Object[][] { { "", "", "", null } };
 
-		DefaultTableModel model = new DefaultTableModel(content, HEADINGS);
-		table = new JTable(model) {
+		DefaultTableModel model = new DefaultTableModel(content,
+				MainWindow.HEADINGS);
+		this.table = new JTable(model) {
 			private static final long serialVersionUID = 1110008116372652220L;
 
+			@Override
 			public boolean isCellEditable(int rowIndex, int colIndex) {
 				return false; // Disallow the editing of any cell
 			}
 		};
-		table.removeColumn(table.getColumnModel().getColumn(3));
-		table.addMouseListener(new MouseListener() {
-			@Override
-			public void mouseReleased(MouseEvent e) {
-			}
-
-			@Override
-			public void mousePressed(MouseEvent e) {
-			}
-
-			@Override
-			public void mouseExited(MouseEvent e) {
-			}
-
-			@Override
-			public void mouseEntered(MouseEvent e) {
-			}
-
+		this.table.removeColumn(this.table.getColumnModel().getColumn(3));
+		this.table.addMouseListener(new MouseListener() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				if (e.getButton() != MouseEvent.BUTTON3) {
@@ -337,8 +331,7 @@ public class MainWindow extends JFrame implements DataPresenter {
 				if (row < 0) {
 					return;
 				}
-				Object o = MainWindow.this.table.getModel()
-						.getValueAt(row, 3);
+				Object o = MainWindow.this.table.getModel().getValueAt(row, 3);
 				CloudFile file;
 				if (o != null) {
 					file = (CloudFile) o;
@@ -348,18 +341,49 @@ public class MainWindow extends JFrame implements DataPresenter {
 				MainWindow.this.clickedCloudFile = file;
 				MainWindow.this.popup.show(e.getComponent(), e.getX(), e.getY());
 			}
+
+			@Override
+			public void mouseEntered(MouseEvent e) {
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e) {
+			}
+
+			@Override
+			public void mousePressed(MouseEvent e) {
+			}
+
+			@Override
+			public void mouseReleased(MouseEvent e) {
+			}
 		});
 
-		scrollPane = new JScrollPane(table);
-		scrollPane.setBounds(0, 0, 600, 400);
-		table.setFillsViewportHeight(true);
+		this.scrollPane = new JScrollPane(this.table);
+		this.scrollPane.setBounds(0, 0, 600, 400);
+		this.table.setFillsViewportHeight(true);
 
-		this.getContentPane().add(scrollPane);
+		this.getContentPane().add(this.scrollPane);
 
 		this.setResizable(false);
-		this.setJMenuBar(menuBar);
+		this.setJMenuBar(this.menuBar);
 
 		this.setVisible(true);
+	}
+
+	/**
+	 * Activates or deactivates components on the GUI depending on whether the
+	 * client is logged in or not.
+	 * 
+	 * @param loggedIn
+	 *            <code>true</code>, if the client is logged in to the server.
+	 */
+	private void deActivateComponents(boolean loggedIn) {
+		this.connectItem.setEnabled(!loggedIn);
+		this.disconnectItem.setEnabled(loggedIn);
+		this.refreshItem.setEnabled(loggedIn);
+		this.uploadItem.setEnabled(loggedIn);
+		this.userCreationItem.setEnabled(!loggedIn);
 	}
 
 	/**
@@ -367,18 +391,6 @@ public class MainWindow extends JFrame implements DataPresenter {
 	 */
 	private void emptyTable() {
 		this.refreshTable(new Object[][] { { "", "", "", null } });
-	}
-
-	/**
-	 * Refreshes the table containing the file list with the given data.
-	 * 
-	 * @param newContent
-	 *            The new data.
-	 */
-	private void refreshTable(Object[][] newContent) {
-		DefaultTableModel model = new DefaultTableModel(newContent, HEADINGS);
-		table.setModel(model);
-		this.table.removeColumn(this.table.getColumnModel().getColumn(3));
 	}
 
 	@Override
@@ -418,15 +430,16 @@ public class MainWindow extends JFrame implements DataPresenter {
 	}
 
 	/**
-	 * Shows the error message via a pop-up when an {@link IOException} is
-	 * thrown.
+	 * Refreshes the table containing the file list with the given data.
 	 * 
-	 * @param e
-	 *            The {@link IOException}.
+	 * @param newContent
+	 *            The new data.
 	 */
-	private void showError(IOException e) {
-		JOptionPane.showMessageDialog(this, e.getMessage(), I18n.getInstance()
-				.getString("connectionError"), JOptionPane.ERROR_MESSAGE);
+	private void refreshTable(Object[][] newContent) {
+		DefaultTableModel model = new DefaultTableModel(newContent,
+				MainWindow.HEADINGS);
+		this.table.setModel(model);
+		this.table.removeColumn(this.table.getColumnModel().getColumn(3));
 	}
 
 	/**
@@ -444,17 +457,14 @@ public class MainWindow extends JFrame implements DataPresenter {
 	}
 
 	/**
-	 * Activates or deactivates components on the GUI depending on whether the
-	 * client is logged in or not.
+	 * Shows the error message via a pop-up when an {@link IOException} is
+	 * thrown.
 	 * 
-	 * @param loggedIn
-	 *            <code>true</code>, if the client is logged in to the server.
+	 * @param e
+	 *            The {@link IOException}.
 	 */
-	private void deActivateComponents(boolean loggedIn) {
-		this.connectItem.setEnabled(!loggedIn);
-		this.disconnectItem.setEnabled(loggedIn);
-		this.refreshItem.setEnabled(loggedIn);
-		this.uploadItem.setEnabled(loggedIn);
-		this.userCreationItem.setEnabled(!loggedIn);
+	private void showError(IOException e) {
+		JOptionPane.showMessageDialog(this, e.getMessage(), I18n.getInstance()
+				.getString("connectionError"), JOptionPane.ERROR_MESSAGE);
 	}
 }

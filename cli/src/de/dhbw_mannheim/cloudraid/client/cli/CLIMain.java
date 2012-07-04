@@ -63,13 +63,13 @@ public class CLIMain {
 			@Override
 			public void run() {
 				while (true) {
-					if (sc != null) {
+					if (CLIMain.sc != null) {
 						try {
 							Thread.sleep(1000L * 60 * 60);
 						} catch (InterruptedException e) {
 						}
 						try {
-							fileList = sc.getFileList();
+							CLIMain.fileList = CLIMain.sc.getFileList();
 						} catch (IOException ignore) {
 						} catch (HTTPException ignore) {
 						} catch (NullPointerException ignore) {
@@ -92,7 +92,7 @@ public class CLIMain {
 			}
 			if ("".equals(command)) {
 				// Empty command. Do nothing.
-			} else if (command.startsWith("login ") && sc == null) {
+			} else if (command.startsWith("login ") && CLIMain.sc == null) {
 				commands = command.split(" ", 4);
 				if (commands.length != 4) {
 					System.out.println("Invalid syntax.");
@@ -111,31 +111,31 @@ public class CLIMain {
 						pw = String.valueOf(c.readPassword());
 					}
 					try {
-						sc = new ServerConnector(new ServerConnection(
+						CLIMain.sc = new ServerConnector(new ServerConnection(
 								commands[2], commands[1], pw,
 								Short.parseShort(commands[3])));
-						sc.login();
+						CLIMain.sc.login();
 						listerThread = new Thread(lister);
 						listerThread.start();
 					} catch (HTTPException e) {
 						System.out.println("Could not log in. Try again.");
 						System.out.println(e.getHTTPCode() + ": "
 								+ e.getHTTPErrorMessage());
-						sc = null;
+						CLIMain.sc = null;
 					} catch (IOException e) {
 						System.out
 								.println("No connection to server. Try again.");
-						sc = null;
+						CLIMain.sc = null;
 					} catch (NumberFormatException e) {
 						System.out.println("Invalid port number.");
-						sc = null;
+						CLIMain.sc = null;
 					}
 				}
 			} else if ("exit".equals(command) || "quit".equals(command)) {
 				System.out.println("Exit CloudRAID client.");
 				try {
-					if (sc != null) {
-						sc.logout();
+					if (CLIMain.sc != null) {
+						CLIMain.sc.logout();
 					}
 				} catch (HTTPException ignore) {
 				} catch (IOException ignore) {
@@ -143,22 +143,22 @@ public class CLIMain {
 				break;
 			} else if ("license".equals(command)) {
 				CLIMain.printLicense();
-			} else if (sc == null) {
+			} else if (CLIMain.sc == null) {
 				System.out.println("Invalid command.");
 				CLIMain.printUsage();
 			} else {
 				// Check for logout
 				if ("logout".equals(command)) {
 					try {
-						sc.logout();
+						CLIMain.sc.logout();
 						listerThread.interrupt();
 					} catch (Exception ignore) {
 					}
-					sc = null;
+					CLIMain.sc = null;
 				} // Check for list command
 				else if ("list".equals(command)) {
 					try {
-						Vector<CloudFile> list = sc.getFileList();
+						Vector<CloudFile> list = CLIMain.sc.getFileList();
 						if (list.size() == 0) {
 							System.out
 									.println("There are no files on the CloudRAID server.");
@@ -183,7 +183,7 @@ public class CLIMain {
 					} else {
 						try {
 							boolean found = false;
-							for (CloudFile file : fileList) {
+							for (CloudFile file : CLIMain.fileList) {
 								if (file.getName().equals(commands[1])) {
 									file.downloadTo(new File("./" + commands[1]));
 									found = true;
@@ -203,10 +203,10 @@ public class CLIMain {
 					}
 				} // Check for upload of file
 				else if (command.startsWith("put ")) {
-					upload(command.split(" ", 3), false, sc);
+					upload(command.split(" ", 3), false, CLIMain.sc);
 				} // Check for update of file
 				else if (command.startsWith("update ")) {
-					upload(command.split(" ", 3), true, sc);
+					upload(command.split(" ", 3), true, CLIMain.sc);
 				} // Check for deletion of file {
 				else if (command.startsWith("delete ")
 						|| command.startsWith("rm ")) {
@@ -215,7 +215,7 @@ public class CLIMain {
 						System.out.println("Invalid syntax.");
 					} else {
 						try {
-							sc.deleteFile(commands[1]);
+							CLIMain.sc.deleteFile(commands[1]);
 						} catch (HTTPException e) {
 							System.out.println(e.getHTTPCode() + ": "
 									+ e.getHTTPErrorMessage());
@@ -239,7 +239,7 @@ public class CLIMain {
 						} else {
 							pw2 = String.valueOf(c.readPassword());
 						}
-						sc.changePassword(pw, pw2);
+						CLIMain.sc.changePassword(pw, pw2);
 					} catch (IOException e) {
 						System.out.println("Could not change password.");
 					} catch (HTTPException e) {
@@ -249,7 +249,7 @@ public class CLIMain {
 				} // Check for server information
 				else if ("server".equals(command)) {
 					try {
-						System.out.println(sc.getApiInfo());
+						System.out.println(CLIMain.sc.getApiInfo());
 					} catch (IOException e) {
 						System.out.println("Could not connect to server.");
 					} catch (HTTPException e) {
@@ -288,7 +288,7 @@ public class CLIMain {
 	 * Sends license information to stdout.
 	 */
 	private static void printLicense() {
-		System.out.println("CloudRAID-Client " + VERSION);
+		System.out.println("CloudRAID-Client " + CLIMain.VERSION);
 		System.out.println("This software and the corresponding server"
 				+ " application is published under the Apache License 2.0 "
 				+ "(https://www.apache.org/licenses/LICENSE-2.0.txt).\n");
