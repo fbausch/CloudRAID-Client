@@ -56,6 +56,7 @@ public class CLIMain {
 	 */
 	private static void interactive() throws IncompatibleApiVersionException {
 		CLIMain.printLicense();
+		System.out.println("Type \"help\" for help.");
 		Console c = System.console();
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 		String[] commands;
@@ -92,6 +93,9 @@ public class CLIMain {
 			}
 			if ("".equals(command)) {
 				// Empty command. Do nothing.
+			} else if ("help".equals(command)) {
+				CLIMain.printUsage();
+				continue;
 			} else if (command.startsWith("login ") && CLIMain.sc == null) {
 				commands = command.split(" ", 4);
 				if (commands.length != 4) {
@@ -127,7 +131,51 @@ public class CLIMain {
 								.println("No connection to server. Try again.");
 						CLIMain.sc = null;
 					} catch (NumberFormatException e) {
-						System.out.println("Invalid port number.");
+						System.out.println("Invalid port number. Try again.");
+						CLIMain.sc = null;
+					}
+				}
+			} // Check for user creation
+			else if (command.startsWith("create ") && CLIMain.sc == null) {
+				commands = command.split(" ", 4);
+				if (commands.length != 4) {
+					System.out.println("Invalid syntax.");
+				} else {
+					System.out.println("Enter password:");
+					String pw = "";
+					String pw2 = "";
+					if (c == null) {
+						try {
+							pw = in.readLine();
+							System.out.println("Confirm password:");
+							pw2 = in.readLine();
+						} catch (IOException e) {
+							System.out
+									.println("Error while reading the password.");
+							return;
+						}
+					} else {
+						pw = String.valueOf(c.readPassword());
+						System.out.println("Confirm password:");
+						pw2 = String.valueOf(c.readPassword());
+					}
+					try {
+						CLIMain.sc = new ServerConnector(new ServerConnection(
+								commands[2], commands[1], pw,
+								Short.parseShort(commands[3])));
+						CLIMain.sc.createUser(pw2);
+					} catch (HTTPException e) {
+						System.out
+								.println("Could not create user account. Try again.");
+						System.out.println(e.getHTTPCode() + ": "
+								+ e.getHTTPErrorMessage());
+						CLIMain.sc = null;
+					} catch (IOException e) {
+						System.out
+								.println("No connection to server. Try again.");
+						CLIMain.sc = null;
+					} catch (NumberFormatException e) {
+						System.out.println("Invalid port number. Try again.");
 						CLIMain.sc = null;
 					}
 				}
@@ -307,11 +355,15 @@ public class CLIMain {
 		System.err.flush();
 		System.out.println("Usage of CloudRAID command-line client:\n");
 		System.out.println("Can always be used:");
+		System.out.println("* help");
+		System.out.println("  - prints this help.\n");
 		System.out.println("* license");
 		System.out.println("  - prints the CloudRAID license information.\n");
 		System.out.println("Can be used after startup or after logout:");
 		System.out.println("* login <user> <server> <port>");
 		System.out.println("  - creates a session with a CloudRAID server.\n");
+		System.out.println("* create <user> <server> <port>");
+		System.out.println("  - creates a user on a CloudRAID server.\n");
 		System.out.println("Can be used after login:");
 		System.out.println("* logout");
 		System.out

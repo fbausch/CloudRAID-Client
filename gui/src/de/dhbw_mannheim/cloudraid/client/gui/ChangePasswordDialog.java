@@ -31,7 +31,6 @@ import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.IOException;
-import java.net.MalformedURLException;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -40,36 +39,33 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
-import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 
-import de.dhbw_mannheim.cloudraid.client.api.IncompatibleApiVersionException;
-import de.dhbw_mannheim.cloudraid.client.api.ServerConnection;
+import de.dhbw_mannheim.cloudraid.client.api.HTTPException;
+import de.dhbw_mannheim.cloudraid.client.api.ServerConnector;
 
-public class UserCreationDialog extends JDialog {
+public class ChangePasswordDialog extends JDialog {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 5030263674078790548L;
 
-	private JButton connectButton, abortButton;
-	private JTextField hostAddress, portNumber, userName;
+	private JButton okButton, abortButton;
 	private JPasswordField passWord, confirmation;
-	private JLabel hostAddressLabel, portNumberLabel, userNameLabel,
-			passWordLabel, confirmationLabel;
+	private JLabel passWordLabel, confirmationLabel;
 
 	private KeyListener returnKeyListener = new KeyListener() {
 		@Override
 		public void keyPressed(KeyEvent e) {
 			if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-				if (e.getSource() != UserCreationDialog.this.abortButton) {
-					UserCreationDialog.this.connect();
+				if (e.getSource() != ChangePasswordDialog.this.abortButton) {
+					ChangePasswordDialog.this.connect();
 				} else {
-					UserCreationDialog.this.abort();
+					ChangePasswordDialog.this.abort();
 				}
 			} else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-				UserCreationDialog.this.abort();
+				ChangePasswordDialog.this.abort();
 			}
 		}
 
@@ -82,8 +78,8 @@ public class UserCreationDialog extends JDialog {
 		}
 	};
 
-	public UserCreationDialog(MainWindow parent) {
-		super(parent, I18n.getInstance().getString("userCreationDialogTitle"));
+	public ChangePasswordDialog(MainWindow parent) {
+		super(parent, I18n.getInstance().getString("passwordChangeDialogTitle"));
 		I18n i = I18n.getInstance();
 		this.setModalityType(ModalityType.APPLICATION_MODAL);
 		this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -95,13 +91,13 @@ public class UserCreationDialog extends JDialog {
 		/**
 		 * connect button
 		 */
-		this.connectButton = new JButton(i.getString("create"));
-		this.connectButton.addKeyListener(this.returnKeyListener);
-		this.connectButton.setPreferredSize(new Dimension(150, 30));
-		this.connectButton.addActionListener(new ActionListener() {
+		this.okButton = new JButton(i.getString("create"));
+		this.okButton.addKeyListener(this.returnKeyListener);
+		this.okButton.setPreferredSize(new Dimension(150, 30));
+		this.okButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				UserCreationDialog.this.connect();
+				ChangePasswordDialog.this.connect();
 			}
 		});
 
@@ -114,64 +110,7 @@ public class UserCreationDialog extends JDialog {
 		this.abortButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				UserCreationDialog.this.abort();
-			}
-		});
-
-		/**
-		 * textfield for host
-		 */
-		this.hostAddressLabel = new JLabel(i.getString("server"));
-		this.hostAddressLabel.setLabelFor(this.hostAddress);
-		this.hostAddress = new JTextField("http://localhost");
-		this.hostAddress.addKeyListener(this.returnKeyListener);
-		this.hostAddress.addFocusListener(new FocusListener() {
-			@Override
-			public void focusGained(FocusEvent arg0) {
-				UserCreationDialog.this.hostAddress.selectAll();
-			}
-
-			@Override
-			public void focusLost(FocusEvent e) {
-				UserCreationDialog.this.hostAddress.select(0, 0);
-			}
-		});
-
-		/**
-		 * textfield for the port
-		 */
-		this.portNumberLabel = new JLabel(i.getString("port"));
-		this.portNumberLabel.setLabelFor(this.portNumber);
-		this.portNumber = new JTextField("8080");
-		this.portNumber.addKeyListener(this.returnKeyListener);
-		this.portNumber.addFocusListener(new FocusListener() {
-			@Override
-			public void focusGained(FocusEvent arg0) {
-				UserCreationDialog.this.portNumber.selectAll();
-			}
-
-			@Override
-			public void focusLost(FocusEvent e) {
-				UserCreationDialog.this.portNumber.select(0, 0);
-			}
-		});
-
-		/**
-		 * textfield for the username
-		 */
-		this.userNameLabel = new JLabel(i.getString("user"));
-		this.userNameLabel.setLabelFor(this.userName);
-		this.userName = new JTextField("test");
-		this.userName.addKeyListener(this.returnKeyListener);
-		this.userName.addFocusListener(new FocusListener() {
-			@Override
-			public void focusGained(FocusEvent arg0) {
-				UserCreationDialog.this.userName.selectAll();
-			}
-
-			@Override
-			public void focusLost(FocusEvent e) {
-				UserCreationDialog.this.userName.select(0, 0);
+				ChangePasswordDialog.this.abort();
 			}
 		});
 
@@ -187,7 +126,7 @@ public class UserCreationDialog extends JDialog {
 			public void keyPressed(KeyEvent e) {
 				if (e.getKeyCode() == KeyEvent.VK_BACK_SPACE
 						&& e.isControlDown()) {
-					UserCreationDialog.this.passWord.setText("");
+					ChangePasswordDialog.this.passWord.setText("");
 				}
 			}
 
@@ -202,12 +141,12 @@ public class UserCreationDialog extends JDialog {
 		this.passWord.addFocusListener(new FocusListener() {
 			@Override
 			public void focusGained(FocusEvent arg0) {
-				UserCreationDialog.this.passWord.selectAll();
+				ChangePasswordDialog.this.passWord.selectAll();
 			}
 
 			@Override
 			public void focusLost(FocusEvent e) {
-				UserCreationDialog.this.passWord.select(0, 0);
+				ChangePasswordDialog.this.passWord.select(0, 0);
 			}
 		});
 
@@ -223,7 +162,7 @@ public class UserCreationDialog extends JDialog {
 			public void keyPressed(KeyEvent e) {
 				if (e.getKeyCode() == KeyEvent.VK_BACK_SPACE
 						&& e.isControlDown()) {
-					UserCreationDialog.this.confirmation.setText("");
+					ChangePasswordDialog.this.confirmation.setText("");
 				}
 			}
 
@@ -238,26 +177,20 @@ public class UserCreationDialog extends JDialog {
 		this.confirmation.addFocusListener(new FocusListener() {
 			@Override
 			public void focusGained(FocusEvent arg0) {
-				UserCreationDialog.this.confirmation.selectAll();
+				ChangePasswordDialog.this.confirmation.selectAll();
 			}
 
 			@Override
 			public void focusLost(FocusEvent e) {
-				UserCreationDialog.this.confirmation.select(0, 0);
+				ChangePasswordDialog.this.confirmation.select(0, 0);
 			}
 		});
 
-		panel.add(this.hostAddressLabel);
-		panel.add(this.hostAddress);
-		panel.add(this.portNumberLabel);
-		panel.add(this.portNumber);
-		panel.add(this.userNameLabel);
-		panel.add(this.userName);
 		panel.add(this.passWordLabel);
 		panel.add(this.passWord);
 		panel.add(this.confirmationLabel);
 		panel.add(this.confirmation);
-		panel.add(this.connectButton);
+		panel.add(this.okButton);
 		panel.add(this.abortButton);
 
 		this.getContentPane().add(panel);
@@ -274,48 +207,29 @@ public class UserCreationDialog extends JDialog {
 
 	private void connect() {
 		I18n i = I18n.getInstance();
-		short port;
-		ServerConnection sc;
-		try {
-			port = Short.parseShort(this.portNumber.getText());
-		} catch (NumberFormatException e) {
-			JOptionPane.showMessageDialog(this,
-					i.getString("incorrectPortNumber"));
-			return;
-		}
 		if (!String.valueOf(this.passWord.getPassword()).equals(
 				String.valueOf(this.confirmation.getPassword()))) {
 			JOptionPane.showMessageDialog(this,
 					i.getString("notMatchingPasswords"));
 			return;
 		}
-		try {
-			sc = new ServerConnection(this.hostAddress.getText(),
-					this.userName.getText(), String.valueOf(this.passWord
-							.getPassword()), port);
-		} catch (MalformedURLException e) {
-			JOptionPane.showMessageDialog(this, i.getString("notAnURL") + "\n"
-					+ e.getMessage());
+		ServerConnector sc = ClientMain.getServerConnector();
+		if (sc == null) {
 			return;
 		}
 		try {
-			ClientMain.setServerConnection(sc);
-		} catch (IncompatibleApiVersionException e) {
-			JOptionPane.showMessageDialog(this, i.getString("apiVersionError"));
-			return;
+			sc.changePassword(String.valueOf(this.passWord.getPassword()),
+					String.valueOf(this.confirmation.getPassword()));
 		} catch (IOException e) {
 			JOptionPane.showMessageDialog(this, i.getString("connectionError"));
 			return;
+		} catch (HTTPException e) {
+			JOptionPane.showMessageDialog(
+					this,
+					e.getHTTPCode() + ": " + e.getHTTPErrorMessage(),
+					I18n.getInstance().getString("error") + " "
+							+ e.getHTTPCode(), JOptionPane.ERROR_MESSAGE);
 		}
 		this.dispose();
-	}
-
-	/**
-	 * Returns the content of the password confirmation field.
-	 * 
-	 * @return The password confirmation to be sent to the CloudRAID server.
-	 */
-	public String getPasswordConfirmation() {
-		return String.valueOf(this.confirmation.getPassword());
 	}
 }

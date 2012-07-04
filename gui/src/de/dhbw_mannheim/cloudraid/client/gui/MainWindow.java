@@ -56,7 +56,8 @@ public class MainWindow extends JFrame implements DataPresenter {
 	private JMenuBar menuBar;
 	private JMenu fileMenu;
 	private JMenuItem connectItem, disconnectItem, closeItem, uploadItem,
-			refreshItem, deleteItem, downloadItem, userCreationItem;
+			refreshItem, deleteItem, downloadItem, userCreationItem,
+			changePwItem;
 	private JTable table;
 	private JPopupMenu popup;
 	private JScrollPane scrollPane;
@@ -223,7 +224,10 @@ public class MainWindow extends JFrame implements DataPresenter {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
-					ClientMain.getServerConnector().logout();
+					ServerConnector sc = ClientMain.getServerConnector();
+					if (sc != null) {
+						ClientMain.getServerConnector().logout();
+					}
 					MainWindow.this.deActivateComponents(false);
 					MainWindow.this.emptyTable();
 					ClientMain.resetServerConnection();
@@ -245,9 +249,20 @@ public class MainWindow extends JFrame implements DataPresenter {
 			}
 		});
 
+		this.changePwItem = new JMenuItem(i.getString("changePw"));
+		this.changePwItem.setMnemonic('p');
+		this.changePwItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				new ChangePasswordDialog(MainWindow.this);
+			}
+		});
+		this.changePwItem.setEnabled(false);
+
 		this.fileMenu.add(this.connectItem);
-		this.fileMenu.add(this.userCreationItem);
 		this.fileMenu.add(this.disconnectItem);
+		this.fileMenu.add(this.userCreationItem);
+		this.fileMenu.add(this.changePwItem);
 		this.fileMenu.add(this.closeItem);
 
 		this.uploadItem = new JMenuItem(i.getString("upload"));
@@ -384,6 +399,7 @@ public class MainWindow extends JFrame implements DataPresenter {
 		this.refreshItem.setEnabled(loggedIn);
 		this.uploadItem.setEnabled(loggedIn);
 		this.userCreationItem.setEnabled(!loggedIn);
+		this.changePwItem.setEnabled(loggedIn);
 	}
 
 	/**

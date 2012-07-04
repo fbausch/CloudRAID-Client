@@ -33,4 +33,6 @@
 	<entry key="deletionSuccessMessage">Datei erfolgreich gelöscht: </entry>
 	<entry key="downloadSuccessMessage">Datei erflogreich heruntergeladen: </entry>
 	<entry key="success">Bestätigung</entry>
+	<entry key="passwordChangeDialogTitle">Passwort ändern</entry>
+	<entry key="changePw">Passwort ändern</entry>
 </properties>

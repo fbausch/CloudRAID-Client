@@ -33,4 +33,6 @@
 	<entry key="deletionSuccessMessage">Successfully deleted the file </entry>
 	<entry key="downloadSuccessMessage">Successfully received the file </entry>
 	<entry key="success">Success</entry>
+	<entry key="passwordChangeDialogTitle">Change Password</entry>
+	<entry key="changePw">Change password</entry>
 </properties>
