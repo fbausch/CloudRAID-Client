@@ -26,8 +26,6 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.IOException;
@@ -49,7 +47,7 @@ public class ChangePasswordDialog extends JDialog {
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 5030263674078790548L;
+	private static final long serialVersionUID = 5030263674078790550L;
 
 	private JButton okButton, abortButton;
 	private JPasswordField passWord, confirmation;
@@ -85,13 +83,13 @@ public class ChangePasswordDialog extends JDialog {
 		this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		this.setResizable(false);
 		JPanel panel = new JPanel();
-		panel.setLayout(new GridLayout(6, 2, 10, 10));
+		panel.setLayout(new GridLayout(3, 2, 10, 10));
 		panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
 		/**
 		 * connect button
 		 */
-		this.okButton = new JButton(i.getString("create"));
+		this.okButton = new JButton(i.getString("change"));
 		this.okButton.addKeyListener(this.returnKeyListener);
 		this.okButton.setPreferredSize(new Dimension(150, 30));
 		this.okButton.addActionListener(new ActionListener() {
@@ -138,22 +136,12 @@ public class ChangePasswordDialog extends JDialog {
 			public void keyTyped(KeyEvent e) {
 			}
 		});
-		this.passWord.addFocusListener(new FocusListener() {
-			@Override
-			public void focusGained(FocusEvent arg0) {
-				ChangePasswordDialog.this.passWord.selectAll();
-			}
-
-			@Override
-			public void focusLost(FocusEvent e) {
-				ChangePasswordDialog.this.passWord.select(0, 0);
-			}
-		});
+		this.passWord.addFocusListener(new TextFieldFocusListener());
 
 		/**
 		 * password confirmation field
 		 */
-		this.confirmationLabel = new JLabel(i.getString("password"));
+		this.confirmationLabel = new JLabel(i.getString("confirmation"));
 		this.confirmationLabel.setLabelFor(this.confirmation);
 		this.confirmation = new JPasswordField("wxyz");
 		this.confirmation.addKeyListener(this.returnKeyListener);
@@ -174,17 +162,7 @@ public class ChangePasswordDialog extends JDialog {
 			public void keyTyped(KeyEvent e) {
 			}
 		});
-		this.confirmation.addFocusListener(new FocusListener() {
-			@Override
-			public void focusGained(FocusEvent arg0) {
-				ChangePasswordDialog.this.confirmation.selectAll();
-			}
-
-			@Override
-			public void focusLost(FocusEvent e) {
-				ChangePasswordDialog.this.confirmation.select(0, 0);
-			}
-		});
+		this.confirmation.addFocusListener(new TextFieldFocusListener());
 
 		panel.add(this.passWordLabel);
 		panel.add(this.passWord);

@@ -26,8 +26,6 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.IOException;
@@ -125,17 +123,7 @@ public class ConnectionDialog extends JDialog {
 		this.hostAddressLabel.setLabelFor(this.hostAddress);
 		this.hostAddress = new JTextField("http://localhost");
 		this.hostAddress.addKeyListener(this.returnKeyListener);
-		this.hostAddress.addFocusListener(new FocusListener() {
-			@Override
-			public void focusGained(FocusEvent arg0) {
-				ConnectionDialog.this.hostAddress.selectAll();
-			}
-
-			@Override
-			public void focusLost(FocusEvent e) {
-				ConnectionDialog.this.hostAddress.select(0, 0);
-			}
-		});
+		this.hostAddress.addFocusListener(new TextFieldFocusListener());
 
 		/**
 		 * textfield for the port
@@ -144,17 +132,7 @@ public class ConnectionDialog extends JDialog {
 		this.portNumberLabel.setLabelFor(this.portNumber);
 		this.portNumber = new JTextField("8080");
 		this.portNumber.addKeyListener(this.returnKeyListener);
-		this.portNumber.addFocusListener(new FocusListener() {
-			@Override
-			public void focusGained(FocusEvent arg0) {
-				ConnectionDialog.this.portNumber.selectAll();
-			}
-
-			@Override
-			public void focusLost(FocusEvent e) {
-				ConnectionDialog.this.portNumber.select(0, 0);
-			}
-		});
+		this.portNumber.addFocusListener(new TextFieldFocusListener());
 
 		/**
 		 * textfield for the username
@@ -163,17 +141,7 @@ public class ConnectionDialog extends JDialog {
 		this.userNameLabel.setLabelFor(this.userName);
 		this.userName = new JTextField("test");
 		this.userName.addKeyListener(this.returnKeyListener);
-		this.userName.addFocusListener(new FocusListener() {
-			@Override
-			public void focusGained(FocusEvent arg0) {
-				ConnectionDialog.this.userName.selectAll();
-			}
-
-			@Override
-			public void focusLost(FocusEvent e) {
-				ConnectionDialog.this.userName.select(0, 0);
-			}
-		});
+		this.userName.addFocusListener(new TextFieldFocusListener());
 
 		/**
 		 * password field
@@ -199,17 +167,7 @@ public class ConnectionDialog extends JDialog {
 			public void keyTyped(KeyEvent e) {
 			}
 		});
-		this.passWord.addFocusListener(new FocusListener() {
-			@Override
-			public void focusGained(FocusEvent arg0) {
-				ConnectionDialog.this.passWord.selectAll();
-			}
-
-			@Override
-			public void focusLost(FocusEvent e) {
-				ConnectionDialog.this.passWord.select(0, 0);
-			}
-		});
+		this.passWord.addFocusListener(new TextFieldFocusListener());
 
 		panel.add(this.hostAddressLabel);
 		panel.add(this.hostAddress);

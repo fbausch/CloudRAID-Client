@@ -44,10 +44,21 @@ import de.dhbw_mannheim.cloudraid.client.api.ServerConnector;
  */
 public class CLIMain {
 
+	/**
+	 * A cache containing the {@link CloudFile}s on the CloudRAID server (at the
+	 * moment of the last request).
+	 */
 	private static Vector<CloudFile> fileList = new Vector<CloudFile>();
 
+	/**
+	 * The {@link ServerConnector} used by the client.
+	 */
 	private static ServerConnector sc = null;
-	private static final String VERSION = "0.1";
+
+	/**
+	 * The version of this command-line client.
+	 */
+	public static final String VERSION = "1.0.0-alpha.1";
 
 	/**
 	 * Starts the interactive console.
@@ -96,6 +107,10 @@ public class CLIMain {
 			} else if ("help".equals(command)) {
 				CLIMain.printUsage();
 				continue;
+			} else if ("version".equals(command)) {
+				System.out.println("CloudRAID-Client " + VERSION);
+				System.out.println("Supported CloudRAID server API version: "
+						+ ServerConnector.API_VERSION);
 			} else if (command.startsWith("login ") && CLIMain.sc == null) {
 				commands = command.split(" ", 4);
 				if (commands.length != 4) {
@@ -204,7 +219,7 @@ public class CLIMain {
 					}
 					CLIMain.sc = null;
 				} // Check for list command
-				else if ("list".equals(command)) {
+				else if ("list".equals(command) || "ls".equals(command)) {
 					try {
 						Vector<CloudFile> list = CLIMain.sc.getFileList();
 						if (list.size() == 0) {
@@ -359,6 +374,10 @@ public class CLIMain {
 		System.out.println("  - prints this help.\n");
 		System.out.println("* license");
 		System.out.println("  - prints the CloudRAID license information.\n");
+		System.out.println("* version");
+		System.out.println("  - prints the version of this software.\n");
+		System.out.println("* exit|quit");
+		System.out.println("  - quits the CloudRAID command-line client.\n");
 		System.out.println("Can be used after startup or after logout:");
 		System.out.println("* login <user> <server> <port>");
 		System.out.println("  - creates a session with a CloudRAID server.\n");
@@ -368,7 +387,7 @@ public class CLIMain {
 		System.out.println("* logout");
 		System.out
 				.println("  - closes an existing session with a CloudRAID server.\n");
-		System.out.println("* list");
+		System.out.println("* list|ls");
 		System.out
 				.println("  - lists all files of the current user on the server.\n");
 		System.out.println("* get <filename>");
@@ -379,7 +398,7 @@ public class CLIMain {
 		System.out.println("  - uploads a file to the server.\n");
 		System.out.println("* update <filename> <path_to_file>");
 		System.out
-				.println("  - uploads _and_ overwrites a file on the server.\n");
+				.println("  - uploads _and_ overwrites an existing file on the server.\n");
 		System.out.println("* changepw");
 		System.out
 				.println("  - changes the password for the user currently logged in.\n");

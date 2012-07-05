@@ -26,8 +26,6 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.IOException;
@@ -51,7 +49,7 @@ public class UserCreationDialog extends JDialog {
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 5030263674078790548L;
+	private static final long serialVersionUID = 5030263674078790549L;
 
 	private JButton connectButton, abortButton;
 	private JTextField hostAddress, portNumber, userName;
@@ -125,17 +123,7 @@ public class UserCreationDialog extends JDialog {
 		this.hostAddressLabel.setLabelFor(this.hostAddress);
 		this.hostAddress = new JTextField("http://localhost");
 		this.hostAddress.addKeyListener(this.returnKeyListener);
-		this.hostAddress.addFocusListener(new FocusListener() {
-			@Override
-			public void focusGained(FocusEvent arg0) {
-				UserCreationDialog.this.hostAddress.selectAll();
-			}
-
-			@Override
-			public void focusLost(FocusEvent e) {
-				UserCreationDialog.this.hostAddress.select(0, 0);
-			}
-		});
+		this.hostAddress.addFocusListener(new TextFieldFocusListener());
 
 		/**
 		 * textfield for the port
@@ -144,17 +132,7 @@ public class UserCreationDialog extends JDialog {
 		this.portNumberLabel.setLabelFor(this.portNumber);
 		this.portNumber = new JTextField("8080");
 		this.portNumber.addKeyListener(this.returnKeyListener);
-		this.portNumber.addFocusListener(new FocusListener() {
-			@Override
-			public void focusGained(FocusEvent arg0) {
-				UserCreationDialog.this.portNumber.selectAll();
-			}
-
-			@Override
-			public void focusLost(FocusEvent e) {
-				UserCreationDialog.this.portNumber.select(0, 0);
-			}
-		});
+		this.portNumber.addFocusListener(new TextFieldFocusListener());
 
 		/**
 		 * textfield for the username
@@ -163,17 +141,7 @@ public class UserCreationDialog extends JDialog {
 		this.userNameLabel.setLabelFor(this.userName);
 		this.userName = new JTextField("test");
 		this.userName.addKeyListener(this.returnKeyListener);
-		this.userName.addFocusListener(new FocusListener() {
-			@Override
-			public void focusGained(FocusEvent arg0) {
-				UserCreationDialog.this.userName.selectAll();
-			}
-
-			@Override
-			public void focusLost(FocusEvent e) {
-				UserCreationDialog.this.userName.select(0, 0);
-			}
-		});
+		this.userName.addFocusListener(new TextFieldFocusListener());
 
 		/**
 		 * password field
@@ -199,22 +167,12 @@ public class UserCreationDialog extends JDialog {
 			public void keyTyped(KeyEvent e) {
 			}
 		});
-		this.passWord.addFocusListener(new FocusListener() {
-			@Override
-			public void focusGained(FocusEvent arg0) {
-				UserCreationDialog.this.passWord.selectAll();
-			}
-
-			@Override
-			public void focusLost(FocusEvent e) {
-				UserCreationDialog.this.passWord.select(0, 0);
-			}
-		});
+		this.passWord.addFocusListener(new TextFieldFocusListener());
 
 		/**
 		 * password confirmation field
 		 */
-		this.confirmationLabel = new JLabel(i.getString("password"));
+		this.confirmationLabel = new JLabel(i.getString("confirmation"));
 		this.confirmationLabel.setLabelFor(this.confirmation);
 		this.confirmation = new JPasswordField("wxyz");
 		this.confirmation.addKeyListener(this.returnKeyListener);
@@ -235,17 +193,7 @@ public class UserCreationDialog extends JDialog {
 			public void keyTyped(KeyEvent e) {
 			}
 		});
-		this.confirmation.addFocusListener(new FocusListener() {
-			@Override
-			public void focusGained(FocusEvent arg0) {
-				UserCreationDialog.this.confirmation.selectAll();
-			}
-
-			@Override
-			public void focusLost(FocusEvent e) {
-				UserCreationDialog.this.confirmation.select(0, 0);
-			}
-		});
+		this.confirmation.addFocusListener(new TextFieldFocusListener());
 
 		panel.add(this.hostAddressLabel);
 		panel.add(this.hostAddress);

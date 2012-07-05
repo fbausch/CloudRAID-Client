@@ -35,4 +35,6 @@
 	<entry key="success">Bestätigung</entry>
 	<entry key="passwordChangeDialogTitle">Passwort ändern</entry>
 	<entry key="changePw">Passwort ändern</entry>
+	<entry key="version">Version</entry>
+	<entry key="supportedApiVersion">Unterstützte CloudRAID Server API Version</entry>
 </properties>

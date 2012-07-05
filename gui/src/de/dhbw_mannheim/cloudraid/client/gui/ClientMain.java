@@ -37,6 +37,11 @@ import de.dhbw_mannheim.cloudraid.client.api.ServerConnector;
  */
 public class ClientMain {
 
+	/**
+	 * The version of this client.
+	 */
+	public final static String VERSION = "1.0.0-alpha.1";
+
 	private static ServerConnection serverConnection = null;
 	private static ServerConnector serverConnector = null;
 	private static MainWindow mainWindow = null;

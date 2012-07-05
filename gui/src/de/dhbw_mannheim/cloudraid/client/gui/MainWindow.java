@@ -57,7 +57,7 @@ public class MainWindow extends JFrame implements DataPresenter {
 	private JMenu fileMenu;
 	private JMenuItem connectItem, disconnectItem, closeItem, uploadItem,
 			refreshItem, deleteItem, downloadItem, userCreationItem,
-			changePwItem;
+			changePwItem, versionItem;
 	private JTable table;
 	private JPopupMenu popup;
 	private JScrollPane scrollPane;
@@ -193,7 +193,7 @@ public class MainWindow extends JFrame implements DataPresenter {
 			}
 		});
 
-		this.userCreationItem = new JMenuItem(i.getString("createUser"));
+		this.userCreationItem = new JMenuItem(i.getString("createUser") + "...");
 		this.userCreationItem.setMnemonic('u');
 		this.userCreationItem.addActionListener(new ActionListener() {
 			@Override
@@ -226,7 +226,7 @@ public class MainWindow extends JFrame implements DataPresenter {
 				try {
 					ServerConnector sc = ClientMain.getServerConnector();
 					if (sc != null) {
-						ClientMain.getServerConnector().logout();
+						sc.logout();
 					}
 					MainWindow.this.deActivateComponents(false);
 					MainWindow.this.emptyTable();
@@ -249,7 +249,7 @@ public class MainWindow extends JFrame implements DataPresenter {
 			}
 		});
 
-		this.changePwItem = new JMenuItem(i.getString("changePw"));
+		this.changePwItem = new JMenuItem(i.getString("changePw") + "...");
 		this.changePwItem.setMnemonic('p');
 		this.changePwItem.addActionListener(new ActionListener() {
 			@Override
@@ -259,10 +259,26 @@ public class MainWindow extends JFrame implements DataPresenter {
 		});
 		this.changePwItem.setEnabled(false);
 
+		this.versionItem = new JMenuItem(i.getString("version") + "...");
+		this.versionItem.setMnemonic('v');
+		this.versionItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				I18n i = I18n.getInstance();
+				JOptionPane.showMessageDialog(
+						MainWindow.this,
+						"CloudRAID Client GUI " + ClientMain.VERSION + "\n"
+								+ i.getString("supportedApiVersion") + ": "
+								+ ServerConnector.API_VERSION,
+						i.getString("version"), JOptionPane.INFORMATION_MESSAGE);
+			}
+		});
+
 		this.fileMenu.add(this.connectItem);
 		this.fileMenu.add(this.disconnectItem);
 		this.fileMenu.add(this.userCreationItem);
 		this.fileMenu.add(this.changePwItem);
+		this.fileMenu.add(this.versionItem);
 		this.fileMenu.add(this.closeItem);
 
 		this.uploadItem = new JMenuItem(i.getString("upload"));
