@@ -234,19 +234,18 @@ public class MainWindow extends JFrame implements DataPresenter {
 			public void actionPerformed(ActionEvent e) {
 				JFileChooser fc = new JFileChooser();
 				int state = fc.showOpenDialog(MainWindow.this);
+				File f = fc.getSelectedFile();
 				if (state == JFileChooser.APPROVE_OPTION) {
 					ServerConnector sc = ClientMain.getServerConnector();
 					try {
-						sc.putFile(fc.getSelectedFile().getName(),
-								fc.getSelectedFile(), false);
+						sc.putFile(f.getName(), f, false);
 						sc.getFileList();
 					} catch (IOException e1) {
 						MainWindow.this.showError(e1);
 					} catch (HTTPException e1) {
 						if (e1.getHTTPCode() == 409) {
 							try {
-								sc.putFile(fc.getSelectedFile().getName(),
-										fc.getSelectedFile(), true);
+								sc.putFile(f.getName(), f, true);
 								sc.getFileList();
 							} catch (IOException e2) {
 								MainWindow.this.showError(e2);

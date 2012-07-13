@@ -33,7 +33,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
+import java.net.URLEncoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -79,6 +81,8 @@ public class ServerConnector {
 	private static final String USER = "X-Username", PASSW = "X-Password",
 			CONTENT_LENGTH = "Content-Length", CONFIRM = "X-Confirm";
 
+	private static final String ENCODING = "utf-8";
+
 	/**
 	 * Restores the session data from a file.
 	 * 
@@ -107,6 +111,20 @@ public class ServerConnector {
 			}
 		}
 		return newCon;
+	}
+
+	/**
+	 * Encodes a file name so that it can be sent to the CloudRAID server.
+	 * 
+	 * @param fileName
+	 *            The file name to be encoded.
+	 * @return The encoded file name.
+	 * @throws UnsupportedEncodingException
+	 */
+	private static String urlEncodeFileNames(String fileName)
+			throws UnsupportedEncodingException {
+		return URLEncoder.encode(fileName, ServerConnector.ENCODING).replace(
+				"+", "%20");
 	}
 
 	/**
@@ -257,6 +275,7 @@ public class ServerConnector {
 	 * @throws HTTPException
 	 */
 	public void deleteFile(String path) throws IOException, HTTPException {
+		path = urlEncodeFileNames(path);
 		HttpURLConnection con = (HttpURLConnection) this.sc.getURL(
 				"/file/" + path + "/").openConnection();
 		con.setRequestMethod(ServerConnector.DELETE);
@@ -338,6 +357,7 @@ public class ServerConnector {
 	 */
 	public void getFile(String path, File destination) throws IOException,
 			HTTPException {
+		path = urlEncodeFileNames(path);
 		InputStream is = null;
 		OutputStream os = null;
 		destination.getParentFile().mkdirs();
@@ -563,6 +583,7 @@ public class ServerConnector {
 	 */
 	public void putFile(String path, File inFile, boolean update)
 			throws IOException, HTTPException {
+		path = urlEncodeFileNames(path);
 		String u = update ? "/update/" : "/";
 		HttpURLConnection con = (HttpURLConnection) this.sc.getURL(
 				"/file/" + path + u).openConnection();
