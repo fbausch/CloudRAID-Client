@@ -28,6 +28,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
 import java.io.IOException;
 import java.util.Vector;
 
@@ -40,7 +41,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.table.DefaultTableModel;
 
@@ -67,6 +67,8 @@ public class MainWindow extends JFrame implements DataPresenter {
 			I18n.getInstance().getString("state"),
 			I18n.getInstance().getString("date"), "File" };
 
+	private int runningThreads = 0;
+
 	public MainWindow() {
 		super(I18n.getInstance().getString("mainWindowTitle"));
 		I18n i = I18n.getInstance();
@@ -85,71 +87,14 @@ public class MainWindow extends JFrame implements DataPresenter {
 		this.deleteItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				SwingUtilities.invokeLater(new Runnable() {
-					@Override
-					public void run() {
-						ServerConnector sc = ClientMain.getServerConnector();
-						if (sc != null) {
-							System.out.println("delete: "
-									+ MainWindow.this.clickedCloudFile);
-							try {
-								I18n i = I18n.getInstance();
-								MainWindow.this.clickedCloudFile.delete();
-								JOptionPane.showMessageDialog(
-										MainWindow.this,
-										i.getString("deletionSuccessMessage")
-												+ MainWindow.this.clickedCloudFile
-														.getName(),
-										i.getString("success"),
-										JOptionPane.INFORMATION_MESSAGE);
-								sc.getFileList();
-							} catch (IOException e1) {
-								MainWindow.this.showError(e1);
-							} catch (HTTPException e1) {
-								MainWindow.this.showError(e1);
-							}
-						}
-					}
-				});
+				MainWindow.this.performDelete();
 			};
 		});
 		this.downloadItem = new JMenuItem(i.getString("download"));
 		this.downloadItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				SwingUtilities.invokeLater(new Runnable() {
-					@Override
-					public void run() {
-						JFileChooser fc = new JFileChooser();
-						int state = fc.showSaveDialog(MainWindow.this);
-						if (state != JFileChooser.APPROVE_OPTION) {
-							return;
-						}
-						ServerConnector sc = ClientMain.getServerConnector();
-						if (sc != null) {
-							System.out.println("download: "
-									+ MainWindow.this.clickedCloudFile);
-							try {
-								I18n i = I18n.getInstance();
-								System.out.println(fc.getSelectedFile()
-										.getAbsolutePath());
-								MainWindow.this.clickedCloudFile.downloadTo(fc
-										.getSelectedFile());
-								JOptionPane.showMessageDialog(
-										MainWindow.this,
-										i.getString("downloadSuccessMessage")
-												+ MainWindow.this.clickedCloudFile
-														.getName(),
-										i.getString("success"),
-										JOptionPane.INFORMATION_MESSAGE);
-							} catch (IOException e1) {
-								MainWindow.this.showError(e1);
-							} catch (HTTPException e1) {
-								MainWindow.this.showError(e1);
-							}
-						}
-					}
-				});
+				MainWindow.this.performDownload();
 			}
 		});
 		this.popup.add(this.deleteItem);
@@ -339,7 +284,7 @@ public class MainWindow extends JFrame implements DataPresenter {
 		this.menuBar.add(this.uploadItem);
 		this.menuBar.add(this.refreshItem);
 
-		Object[][] content = new Object[][] { { "", "", "", null } };
+		Object[][] content = new Object[][] {};
 
 		DefaultTableModel model = new DefaultTableModel(content,
 				MainWindow.HEADINGS);
@@ -438,9 +383,91 @@ public class MainWindow extends JFrame implements DataPresenter {
 	}
 
 	/**
-	 * Closes the MainWindow and exits the application.
+	 * Performs the actual deletion of a {@link CloudFile};
+	 */
+	private void performDelete() {
+		final CloudFile cf = this.clickedCloudFile;
+		registerThread(true);
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					ServerConnector sc = ClientMain.getServerConnector();
+					if (sc != null) {
+						System.out.println("delete: " + cf);
+						try {
+							I18n i = I18n.getInstance();
+							cf.delete();
+							JOptionPane.showMessageDialog(
+									MainWindow.this,
+									i.getString("deletionSuccessMessage")
+											+ cf.getName(),
+									i.getString("success"),
+									JOptionPane.INFORMATION_MESSAGE);
+							sc.getFileList();
+						} catch (IOException e1) {
+							showError(e1);
+						} catch (HTTPException e1) {
+							showError(e1);
+						}
+					}
+				} finally {
+					registerThread(false);
+				}
+			}
+		}).start();
+	}
+
+	/**
+	 * Performs the actual download of a {@link CloudFile};
+	 */
+	private void performDownload() {
+		JFileChooser fc = new JFileChooser();
+		int state = fc.showSaveDialog(MainWindow.this);
+		if (state != JFileChooser.APPROVE_OPTION) {
+			return;
+		}
+		final File f = fc.getSelectedFile();
+		final CloudFile cf = this.clickedCloudFile;
+		registerThread(true);
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					ServerConnector sc = ClientMain.getServerConnector();
+					if (sc != null) {
+						System.out.println("download: " + cf);
+						try {
+							I18n i = I18n.getInstance();
+							System.out.println(f.getAbsolutePath());
+							cf.downloadTo(f);
+							JOptionPane.showMessageDialog(
+									MainWindow.this,
+									i.getString("downloadSuccessMessage")
+											+ cf.getName(),
+									i.getString("success"),
+									JOptionPane.INFORMATION_MESSAGE);
+						} catch (IOException e1) {
+							showError(e1);
+						} catch (HTTPException e1) {
+							showError(e1);
+						}
+					}
+				} finally {
+					registerThread(false);
+				}
+			}
+		}).start();
+	}
+
+	/**
+	 * Closes the MainWindow and exits the application, if no thread is running
+	 * (e.g. for deleting and downloading).
 	 */
 	private void quit() {
+		if (this.runningThreads > 0) {
+			return;
+		}
 		I18n i = I18n.getInstance();
 		int r = JOptionPane.showConfirmDialog(MainWindow.this,
 				i.getString("exitConfirmationQuestion"),
@@ -472,6 +499,22 @@ public class MainWindow extends JFrame implements DataPresenter {
 				MainWindow.HEADINGS);
 		this.table.setModel(model);
 		this.table.removeColumn(this.table.getColumnModel().getColumn(3));
+	}
+
+	/**
+	 * Registers a running thread or unregisters a finished thread and disables
+	 * the fileMenuItem, if at least one thread is running.
+	 * 
+	 * @param register
+	 *            true for registering; false for unregistering.
+	 */
+	private synchronized void registerThread(boolean register) {
+		this.runningThreads += register ? 1 : -1;
+		if (this.runningThreads == 0) {
+			this.fileMenu.setEnabled(true);
+		} else {
+			this.fileMenu.setEnabled(false);
+		}
 	}
 
 	/**
