@@ -67,6 +67,7 @@ public class MainWindow extends JFrame implements DataPresenter {
 			I18n.getInstance().getString("state"),
 			I18n.getInstance().getString("date"), "File" };
 
+	private Thread listUpdater;
 	private int runningThreads = 0;
 
 	public MainWindow() {
@@ -345,6 +346,24 @@ public class MainWindow extends JFrame implements DataPresenter {
 		this.setJMenuBar(this.menuBar);
 
 		this.setVisible(true);
+
+		this.listUpdater = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				while (true) {
+					try {
+						try {
+							ClientMain.getServerConnector().getFileList();
+						} catch (Exception e) {
+						}
+						Thread.sleep(30000L);
+					} catch (InterruptedException e) {
+						return;
+					}
+				}
+			}
+		});
+		this.listUpdater.start();
 	}
 
 	/**
@@ -363,15 +382,21 @@ public class MainWindow extends JFrame implements DataPresenter {
 		this.changePwItem.setEnabled(loggedIn);
 	}
 
+	@Override
+	public void dispose() {
+		this.listUpdater.interrupt();
+		super.dispose();
+	}
+
 	/**
 	 * Removes all data from the table containing the file list.
 	 */
 	private void emptyTable() {
-		this.refreshTable(new Object[][] { { "", "", "", null } });
+		this.refreshTable(new Object[][] {});
 	}
 
 	@Override
-	public void giveFileList(Vector<CloudFile> fileList) {
+	public synchronized void giveFileList(Vector<CloudFile> fileList) {
 		Object[][] data = new Object[fileList.size()][4];
 		int i = 0;
 		for (CloudFile cf : fileList) {
@@ -422,13 +447,14 @@ public class MainWindow extends JFrame implements DataPresenter {
 	 * Performs the actual download of a {@link CloudFile};
 	 */
 	private void performDownload() {
+		final CloudFile cf = this.clickedCloudFile;
 		JFileChooser fc = new JFileChooser();
+		fc.setSelectedFile(new File(cf.getName()));
 		int state = fc.showSaveDialog(MainWindow.this);
 		if (state != JFileChooser.APPROVE_OPTION) {
 			return;
 		}
 		final File f = fc.getSelectedFile();
-		final CloudFile cf = this.clickedCloudFile;
 		registerThread(true);
 		new Thread(new Runnable() {
 			@Override
@@ -485,7 +511,7 @@ public class MainWindow extends JFrame implements DataPresenter {
 				showError(e1);
 			}
 		}
-		MainWindow.this.dispose();
+		this.dispose();
 	}
 
 	/**
