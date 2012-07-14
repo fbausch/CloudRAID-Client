@@ -108,7 +108,7 @@ public class CLIMain {
 				CLIMain.printUsage();
 				continue;
 			} else if ("version".equals(command)) {
-				System.out.println("CloudRAID-Client " + VERSION);
+				System.out.println("CloudRAID-Client " + CLIMain.VERSION);
 				System.out.println("Supported CloudRAID server API version: "
 						+ ServerConnector.API_VERSION);
 			} else if (command.startsWith("login ") && CLIMain.sc == null) {

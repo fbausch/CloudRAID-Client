@@ -284,7 +284,7 @@ public class MainWindow extends JFrame implements DataPresenter {
 		this.menuBar.add(this.uploadItem);
 		this.menuBar.add(this.refreshItem);
 
-		Object[][] content = new Object[][] {};
+		Object[][] content = new Object[][] { { "", "", "", null } };
 
 		DefaultTableModel model = new DefaultTableModel(content,
 				MainWindow.HEADINGS);
@@ -391,12 +391,15 @@ public class MainWindow extends JFrame implements DataPresenter {
 	 * Removes all data from the table containing the file list.
 	 */
 	private void emptyTable() {
-		this.refreshTable(new Object[][] {});
+		this.refreshTable(new Object[][] { { "", "", "", null } });
 	}
 
 	@Override
 	public synchronized void giveFileList(Vector<CloudFile> fileList) {
 		Object[][] data = new Object[fileList.size()][4];
+		if (fileList.size() == 0) {
+			this.emptyTable();
+		}
 		int i = 0;
 		for (CloudFile cf : fileList) {
 			Object[] d = new Object[] { cf.getName(), cf.getState(),
