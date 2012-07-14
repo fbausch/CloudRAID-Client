@@ -22,6 +22,8 @@
 
 package de.dhbw_mannheim.cloudraid.client.cli;
 
+import static java.io.File.separator;
+
 import java.io.BufferedReader;
 import java.io.Console;
 import java.io.File;
@@ -59,6 +61,17 @@ public class CLIMain {
 	 * The version of this command-line client.
 	 */
 	public static final String VERSION = "1.0.0-alpha.1";
+
+	/**
+	 * The working directory of this application. Will be used to download
+	 * {@link CloudFile}s to.
+	 */
+	private static File workingDir = new File("./");
+
+	/**
+	 * The String representation of the working directory {@link File} object.
+	 */
+	private static String workDir;
 
 	/**
 	 * Starts the interactive console.
@@ -248,7 +261,8 @@ public class CLIMain {
 							boolean found = false;
 							for (CloudFile file : CLIMain.fileList) {
 								if (file.getName().equals(commands[1])) {
-									file.downloadTo(new File("./" + commands[1]));
+									file.downloadTo(new File(workDir
+											+ commands[1]));
 									found = true;
 									break;
 								}
@@ -334,9 +348,19 @@ public class CLIMain {
 	 * Creates an interactive console for CloudRAID.
 	 * 
 	 * @param args
-	 *            Not interpreted.
+	 *            The first element of the args array is interpreted as the
+	 *            working directory of the application. If no path is specified
+	 *            or the specified path does not exist, the current directory is
+	 *            used.
 	 */
 	public static void main(String[] args) {
+		if (args.length >= 1) {
+			File tmp = new File(args[0]);
+			if (tmp.exists() && tmp.isDirectory()) {
+				workingDir = tmp;
+			}
+		}
+		workDir = workingDir.getAbsolutePath() + separator;
 		// Start interactive mode
 		try {
 			CLIMain.interactive();
