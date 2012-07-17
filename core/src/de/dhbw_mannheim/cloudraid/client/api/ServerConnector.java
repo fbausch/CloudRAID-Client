@@ -589,7 +589,7 @@ public class ServerConnector {
 		if (update) {
 			con.setRequestMethod(ServerConnector.PUT);
 		} else {
-			con.setRequestMethod(POST);
+			con.setRequestMethod(ServerConnector.POST);
 		}
 		con.setRequestProperty(ServerConnector.COOKIE, this.session);
 		con.setRequestProperty(ServerConnector.CONTENT_LENGTH,

@@ -22,8 +22,6 @@
 
 package de.dhbw_mannheim.cloudraid.client.cli;
 
-import static java.io.File.separator;
-
 import java.io.BufferedReader;
 import java.io.Console;
 import java.io.File;
@@ -261,7 +259,7 @@ public class CLIMain {
 							boolean found = false;
 							for (CloudFile file : CLIMain.fileList) {
 								if (file.getName().equals(commands[1])) {
-									file.downloadTo(new File(workDir
+									file.downloadTo(new File(CLIMain.workDir
 											+ commands[1]));
 									found = true;
 									break;
@@ -357,10 +355,10 @@ public class CLIMain {
 		if (args.length >= 1) {
 			File tmp = new File(args[0]);
 			if (tmp.exists() && tmp.isDirectory()) {
-				workingDir = tmp;
+				CLIMain.workingDir = tmp;
 			}
 		}
-		workDir = workingDir.getAbsolutePath() + separator;
+		CLIMain.workDir = CLIMain.workingDir.getAbsolutePath() + File.separator;
 		// Start interactive mode
 		try {
 			CLIMain.interactive();
