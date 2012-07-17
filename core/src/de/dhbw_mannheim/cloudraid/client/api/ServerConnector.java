@@ -52,7 +52,7 @@ public class ServerConnector {
 	/**
 	 * Indicates the compatible CloudRAID API version.
 	 */
-	public static final String API_VERSION = "0.1";
+	public static final String API_VERSION = "0.2";
 
 	/**
 	 * The date format used by the CloudRAID server.
@@ -584,10 +584,13 @@ public class ServerConnector {
 	public void putFile(String path, File inFile, boolean update)
 			throws IOException, HTTPException {
 		path = urlEncodeFileNames(path);
-		String u = update ? "/update/" : "/";
 		HttpURLConnection con = (HttpURLConnection) this.sc.getURL(
-				"/file/" + path + u).openConnection();
-		con.setRequestMethod(ServerConnector.PUT);
+				"/file/" + path + "/").openConnection();
+		if (update) {
+			con.setRequestMethod(ServerConnector.PUT);
+		} else {
+			con.setRequestMethod(POST);
+		}
 		con.setRequestProperty(ServerConnector.COOKIE, this.session);
 		con.setRequestProperty(ServerConnector.CONTENT_LENGTH,
 				String.valueOf(inFile.length()));
@@ -603,6 +606,7 @@ public class ServerConnector {
 			}
 			os.close();
 			switch (con.getResponseCode()) {
+			case 200:
 			case 201:
 				break;
 			case 401:
