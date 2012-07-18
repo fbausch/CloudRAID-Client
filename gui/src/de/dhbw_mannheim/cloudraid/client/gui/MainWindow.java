@@ -336,7 +336,7 @@ public class MainWindow extends JFrame implements DataPresenter {
 		});
 
 		this.scrollPane = new JScrollPane(this.table);
-		this.scrollPane.setBounds(0, 0, 600, 400);
+		this.scrollPane.setBounds(0, 0, 598, 384);
 		this.table.setFillsViewportHeight(true);
 
 		this.getContentPane().add(this.scrollPane);
