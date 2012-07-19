@@ -35,6 +35,7 @@ public class ServerConnection {
 	private String user;
 	private String password;
 	private String server;
+	private String protocol;
 	private short port;
 
 	/**
@@ -42,8 +43,10 @@ public class ServerConnection {
 	 * a CloudRAID server.
 	 * 
 	 * @param server
-	 *            The server's address. It does not matter, whether it starts
-	 *            with "http://" or not.
+	 *            The server's address. If the address does not start with
+	 *            http:// or https:// it will be assumed that https:// should be
+	 *            used. The used protocol can later be changed by calling
+	 *            {@link #setSecureConnection(boolean)}.
 	 * @param user
 	 *            The user name.
 	 * @param password
@@ -54,14 +57,22 @@ public class ServerConnection {
 	 */
 	public ServerConnection(String server, String user, String password,
 			short port) throws MalformedURLException {
-		if (!server.startsWith("http://")) {
-			server = "http://" + server;
-		}
-		new URL(server + ":" + port); // Test, if server and port are valid
-		this.server = server;
 		this.port = port;
 		this.user = user;
 		this.password = password;
+		server = server.toLowerCase();
+		if (server.startsWith("http://")) {
+			this.protocol = "http://";
+			this.server = server.substring(7);
+		} else if (server.startsWith("https://")) {
+			this.protocol = "https://";
+			this.server = server.substring(8);
+		} else {
+			this.protocol = "https://";
+			this.server = server;
+		}
+		// Test, if server and port are valid
+		new URL(this.protocol + this.server + ":" + this.port);
 	}
 
 	/**
@@ -83,6 +94,15 @@ public class ServerConnection {
 	}
 
 	/**
+	 * Returns the protocol used (http:// or https://).
+	 * 
+	 * @return The protocol.
+	 */
+	protected String getProtocol() {
+		return this.protocol;
+	}
+
+	/**
 	 * Returns the server address.
 	 * 
 	 * @return The server address.
@@ -100,7 +120,7 @@ public class ServerConnection {
 	 */
 	protected URL getURL(String path) {
 		try {
-			return new URL(this.server + ":" + this.port + path);
+			return new URL(this.protocol + this.server + ":" + this.port + path);
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 			return null;
@@ -116,8 +136,28 @@ public class ServerConnection {
 		return this.user;
 	}
 
+	/**
+	 * Indicates, if the {@link ServerConnection} is secured by HTTPS.
+	 * 
+	 * @return true, if HTTPS is used; false otherwise.
+	 */
+	protected boolean isSecureConnection() {
+		return "https://".equals(this.protocol);
+	}
+
+	/**
+	 * Sets the used protocol either to https:// or http://.
+	 * 
+	 * @param secure
+	 *            If true, https:// will be used; if false, http:// will be
+	 *            used.
+	 */
+	protected void setSecureConnection(boolean secure) {
+		this.protocol = secure ? "https://" : "http://";
+	}
+
 	@Override
 	public String toString() {
-		return this.user + "@" + this.server + ":" + this.port;
+		return this.protocol + this.user + "@" + this.server + ":" + this.port;
 	}
 }

@@ -35,12 +35,15 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
+import java.net.ProtocolException;
 import java.net.URLEncoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Vector;
+
+import javax.net.ssl.SSLException;
 
 /**
  * Manages the connection to a CloudRAID server.
@@ -157,6 +160,9 @@ public class ServerConnector {
 	public ServerConnector(ServerConnection sc)
 			throws IncompatibleApiVersionException, IOException {
 		this.sc = sc;
+		if (!validateProtocol()) {
+			throw new ProtocolException();
+		}
 		if (!validateApi()) {
 			throw new IncompatibleApiVersionException();
 		}
@@ -659,6 +665,29 @@ public class ServerConnector {
 	}
 
 	/**
+	 * Sends a dummy request to the CloudRAID server and returns the regarding
+	 * HTTP status code.
+	 * 
+	 * @return The HTTP status code.
+	 */
+	private int sendDummyRequest() {
+		int resp = -1;
+		try {
+			HttpURLConnection con = (HttpURLConnection) this.sc.getURL(
+					"/api/info/").openConnection();
+			try {
+				con.connect();
+				resp = con.getResponseCode();
+			} catch (SSLException ignore) {
+			} finally {
+				con.disconnect();
+			}
+		} catch (IOException ignore) {
+		}
+		return resp;
+	}
+
+	/**
 	 * Sets the session for the {@link ServerConnector}. Use this to restore a
 	 * session.
 	 * 
@@ -727,6 +756,32 @@ public class ServerConnector {
 			return apiVersion.equals(wantedVersion);
 		} finally {
 			con.disconnect();
+		}
+	}
+
+	/**
+	 * Checks, if the protocol used can be used with the CloudRAID server. If
+	 * HTTP is given, but HTTPS would work, the protocol is changed to HTTPS. If
+	 * HTTPS is given, but would not work, the protocol is <em>not</em> changed
+	 * to HTTP for security reasons.
+	 * 
+	 * @return true, if the CloudRAID server supports the given protocol (or
+	 *         HTTPS), false otherwise.
+	 */
+	private boolean validateProtocol() {
+		int resp = this.sendDummyRequest();
+		if (this.sc.isSecureConnection()) {
+			return resp == 200;
+		}
+		// Check, if HTTPS can be used.
+		boolean httpWorked = resp == 200;
+		this.sc.setSecureConnection(true);
+		resp = this.sendDummyRequest();
+		if (resp == 200) {
+			return true;
+		} else {
+			this.sc.setSecureConnection(false);
+			return httpWorked;
 		}
 	}
 }
