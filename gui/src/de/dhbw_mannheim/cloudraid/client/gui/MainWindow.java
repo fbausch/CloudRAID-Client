@@ -55,10 +55,13 @@ public class MainWindow extends JFrame implements DataPresenter {
 	private static final long serialVersionUID = 7714408179804838679L;
 
 	private JMenuBar menuBar;
-	private JMenu fileMenu;
-	private JMenuItem connectItem, disconnectItem, closeItem, uploadItem,
-			refreshItem, deleteItem, downloadItem, userCreationItem,
-			changePwItem, versionItem, creditsItem;
+	private JMenu fileMenu = new JMenu();
+	private JMenuItem connectItem = new JMenuItem(),
+			disconnectItem = new JMenuItem(), closeItem = new JMenuItem(),
+			uploadItem = new JMenuItem(), refreshItem = new JMenuItem(),
+			deleteItem = new JMenuItem(), downloadItem = new JMenuItem(),
+			userCreationItem = new JMenuItem(), changePwItem = new JMenuItem(),
+			versionItem = new JMenuItem(), creditsItem = new JMenuItem();
 	private JTable table;
 	private JPopupMenu popup;
 	private JScrollPane scrollPane;
@@ -85,14 +88,14 @@ public class MainWindow extends JFrame implements DataPresenter {
 
 		I18n i = I18n.getInstance();
 		this.popup = new JPopupMenu(i.getString("fileActions"));
-		this.deleteItem = new JMenuItem(i.getString("delete"));
+		this.deleteItem.setText(i.getString("delete"));
 		this.deleteItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				MainWindow.this.performDelete();
 			};
 		});
-		this.downloadItem = new JMenuItem(i.getString("download"));
+		this.downloadItem.setText(i.getString("download"));
 		this.downloadItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -104,10 +107,8 @@ public class MainWindow extends JFrame implements DataPresenter {
 
 		this.menuBar = new JMenuBar();
 
-		this.fileMenu = new JMenu();
 		setMnemonic(this.fileMenu, "mainMenuTitle", 'c');
 
-		this.connectItem = new JMenuItem();
 		setMnemonic(this.connectItem, "connect", 'c', "...");
 		this.connectItem.addActionListener(new ActionListener() {
 			@Override
@@ -140,7 +141,6 @@ public class MainWindow extends JFrame implements DataPresenter {
 			}
 		});
 
-		this.userCreationItem = new JMenuItem();
 		setMnemonic(this.userCreationItem, "createUser", 'u', "...");
 		this.userCreationItem.addActionListener(new ActionListener() {
 			@Override
@@ -165,7 +165,6 @@ public class MainWindow extends JFrame implements DataPresenter {
 			}
 		});
 
-		this.disconnectItem = new JMenuItem();
 		setMnemonic(this.disconnectItem, "disconnect", 'd');
 		this.disconnectItem.addActionListener(new ActionListener() {
 			@Override
@@ -187,7 +186,6 @@ public class MainWindow extends JFrame implements DataPresenter {
 		});
 		this.disconnectItem.setEnabled(false);
 
-		this.closeItem = new JMenuItem();
 		setMnemonic(this.closeItem, "quit", 'q', "...");
 		this.closeItem.addActionListener(new ActionListener() {
 			@Override
@@ -196,7 +194,6 @@ public class MainWindow extends JFrame implements DataPresenter {
 			}
 		});
 
-		this.changePwItem = new JMenuItem();
 		setMnemonic(this.changePwItem, "changePw", 'p', "...");
 		this.changePwItem.addActionListener(new ActionListener() {
 			@Override
@@ -206,7 +203,6 @@ public class MainWindow extends JFrame implements DataPresenter {
 		});
 		this.changePwItem.setEnabled(false);
 
-		this.versionItem = new JMenuItem();
 		setMnemonic(this.versionItem, "version", 'v', "...");
 		this.versionItem.addActionListener(new ActionListener() {
 			@Override
@@ -221,7 +217,6 @@ public class MainWindow extends JFrame implements DataPresenter {
 			}
 		});
 
-		this.creditsItem = new JMenuItem();
 		setMnemonic(this.creditsItem, "credits", 'i', "...");
 		this.creditsItem.addActionListener(new ActionListener() {
 			@Override
@@ -241,7 +236,6 @@ public class MainWindow extends JFrame implements DataPresenter {
 		this.fileMenu.add(this.creditsItem);
 		this.fileMenu.add(this.closeItem);
 
-		this.uploadItem = new JMenuItem();
 		setMnemonic(this.uploadItem, "upload", 'u');
 		this.uploadItem.addActionListener(new ActionListener() {
 			@Override
@@ -275,7 +269,6 @@ public class MainWindow extends JFrame implements DataPresenter {
 		});
 		this.uploadItem.setEnabled(false);
 
-		this.refreshItem = new JMenuItem();
 		setMnemonic(this.refreshItem, "refresh", 'r');
 		this.refreshItem.addActionListener(new ActionListener() {
 			@Override
