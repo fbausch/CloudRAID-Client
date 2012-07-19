@@ -317,6 +317,8 @@ public class MainWindow extends JFrame implements DataPresenter {
 				if (row < 0) {
 					return;
 				}
+				MainWindow.this.table.getSelectionModel().setSelectionInterval(
+						row, row);
 				Object o = MainWindow.this.table.getModel().getValueAt(row, 3);
 				CloudFile file;
 				if (o != null) {
