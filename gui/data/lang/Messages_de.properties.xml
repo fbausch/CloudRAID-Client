@@ -37,4 +37,9 @@
 	<entry key="changePw">Passwort ändern</entry>
 	<entry key="version">Version</entry>
 	<entry key="supportedApiVersion">Unterstützte CloudRAID Server API Version</entry>
+	<entry key="change">Ändern</entry>
+	<entry key="confirmation">Passwort (erneut)</entry>
+	<entry key="credits">Lizenz</entry>
+	<entry key="creditsText">Dieses Programm wurde unter der Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0.txt) veröffentlicht.
+	Autoren: Florian Bausch und Markus Holtermann</entry>
 </properties>

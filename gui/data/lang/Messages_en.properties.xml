@@ -39,4 +39,7 @@
 	<entry key="supportedApiVersion">Supported CloudRAID server API version</entry>
 	<entry key="change">Change</entry>
 	<entry key="confirmation">Confirm password</entry>
+	<entry key="credits">Credentials</entry>
+	<entry key="creditsText">This program is published under the Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0.txt).
+	Authors: Florian Bausch and Markus Holtermann</entry>
 </properties>

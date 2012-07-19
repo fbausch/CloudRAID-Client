@@ -32,6 +32,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Vector;
 
+import javax.swing.AbstractButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -57,7 +58,7 @@ public class MainWindow extends JFrame implements DataPresenter {
 	private JMenu fileMenu;
 	private JMenuItem connectItem, disconnectItem, closeItem, uploadItem,
 			refreshItem, deleteItem, downloadItem, userCreationItem,
-			changePwItem, versionItem;
+			changePwItem, versionItem, creditsItem;
 	private JTable table;
 	private JPopupMenu popup;
 	private JScrollPane scrollPane;
@@ -72,7 +73,6 @@ public class MainWindow extends JFrame implements DataPresenter {
 
 	public MainWindow() {
 		super(I18n.getInstance().getString("mainWindowTitle"));
-		I18n i = I18n.getInstance();
 		this.setLayout(null);
 		this.setBounds(50, 50, 600, 430);
 		this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
@@ -83,6 +83,7 @@ public class MainWindow extends JFrame implements DataPresenter {
 			}
 		});
 
+		I18n i = I18n.getInstance();
 		this.popup = new JPopupMenu(i.getString("fileActions"));
 		this.deleteItem = new JMenuItem(i.getString("delete"));
 		this.deleteItem.addActionListener(new ActionListener() {
@@ -103,11 +104,11 @@ public class MainWindow extends JFrame implements DataPresenter {
 
 		this.menuBar = new JMenuBar();
 
-		this.fileMenu = new JMenu(i.getString("mainMenuTitle"));
-		this.fileMenu.setMnemonic('c');
+		this.fileMenu = new JMenu();
+		setMnemonic(this.fileMenu, "mainMenuTitle", 'c');
 
-		this.connectItem = new JMenuItem(i.getString("connect") + "...");
-		this.connectItem.setMnemonic('c');
+		this.connectItem = new JMenuItem();
+		setMnemonic(this.connectItem, "connect", 'c', "...");
 		this.connectItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -139,8 +140,8 @@ public class MainWindow extends JFrame implements DataPresenter {
 			}
 		});
 
-		this.userCreationItem = new JMenuItem(i.getString("createUser") + "...");
-		this.userCreationItem.setMnemonic('u');
+		this.userCreationItem = new JMenuItem();
+		setMnemonic(this.userCreationItem, "createUser", 'u', "...");
 		this.userCreationItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -164,8 +165,8 @@ public class MainWindow extends JFrame implements DataPresenter {
 			}
 		});
 
-		this.disconnectItem = new JMenuItem(i.getString("disconnect"));
-		this.disconnectItem.setMnemonic('d');
+		this.disconnectItem = new JMenuItem();
+		setMnemonic(this.disconnectItem, "disconnect", 'd');
 		this.disconnectItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -186,8 +187,8 @@ public class MainWindow extends JFrame implements DataPresenter {
 		});
 		this.disconnectItem.setEnabled(false);
 
-		this.closeItem = new JMenuItem(i.getString("quit") + "...");
-		this.closeItem.setMnemonic('q');
+		this.closeItem = new JMenuItem();
+		setMnemonic(this.closeItem, "quit", 'q', "...");
 		this.closeItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -195,8 +196,8 @@ public class MainWindow extends JFrame implements DataPresenter {
 			}
 		});
 
-		this.changePwItem = new JMenuItem(i.getString("changePw") + "...");
-		this.changePwItem.setMnemonic('p');
+		this.changePwItem = new JMenuItem();
+		setMnemonic(this.changePwItem, "changePw", 'p', "...");
 		this.changePwItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -205,8 +206,8 @@ public class MainWindow extends JFrame implements DataPresenter {
 		});
 		this.changePwItem.setEnabled(false);
 
-		this.versionItem = new JMenuItem(i.getString("version") + "...");
-		this.versionItem.setMnemonic('v');
+		this.versionItem = new JMenuItem();
+		setMnemonic(this.versionItem, "version", 'v', "...");
 		this.versionItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -220,15 +221,28 @@ public class MainWindow extends JFrame implements DataPresenter {
 			}
 		});
 
+		this.creditsItem = new JMenuItem();
+		setMnemonic(this.creditsItem, "credits", 'i', "...");
+		this.creditsItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				I18n i = I18n.getInstance();
+				JOptionPane.showMessageDialog(MainWindow.this,
+						i.getString("creditsText"), i.getString("credits"),
+						JOptionPane.INFORMATION_MESSAGE);
+			}
+		});
+
 		this.fileMenu.add(this.connectItem);
 		this.fileMenu.add(this.disconnectItem);
 		this.fileMenu.add(this.userCreationItem);
 		this.fileMenu.add(this.changePwItem);
 		this.fileMenu.add(this.versionItem);
+		this.fileMenu.add(this.creditsItem);
 		this.fileMenu.add(this.closeItem);
 
-		this.uploadItem = new JMenuItem(i.getString("upload"));
-		this.uploadItem.setMnemonic('u');
+		this.uploadItem = new JMenuItem();
+		setMnemonic(this.uploadItem, "upload", 'u');
 		this.uploadItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -261,8 +275,8 @@ public class MainWindow extends JFrame implements DataPresenter {
 		});
 		this.uploadItem.setEnabled(false);
 
-		this.refreshItem = new JMenuItem(i.getString("refresh"));
-		this.refreshItem.setMnemonic('r');
+		this.refreshItem = new JMenuItem();
+		setMnemonic(this.refreshItem, "refresh", 'r');
 		this.refreshItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -543,6 +557,55 @@ public class MainWindow extends JFrame implements DataPresenter {
 		} else {
 			this.fileMenu.setEnabled(false);
 		}
+	}
+
+	/**
+	 * Sets the text and the mnemonic of an {@link AbstractButton}. As text of
+	 * the {@link AbstractButton} the localization text ({@link I18n}) is used.
+	 * <em>s</em> is the regarding key. The mnemonic character is appended
+	 * (within parentheses) to that String, if the character is not contained in
+	 * the localization text.
+	 * 
+	 * @see #setMnemonic(AbstractButton, String, char, String).
+	 * @param ab
+	 *            The abstract button.
+	 * @param s
+	 *            The key of the String to be used in the
+	 *            Messages_xx.properties.xml.
+	 * @param mn
+	 *            The mnemonic character to be set.
+	 */
+	private void setMnemonic(AbstractButton ab, String s, char mn) {
+		this.setMnemonic(ab, s, mn, "");
+	}
+
+	/**
+	 * Sets the text and the mnemonic of an {@link AbstractButton}. As text of
+	 * the {@link AbstractButton} the localization text ({@link I18n}) is used.
+	 * <em>s</em> is the regarding key. <em>add</em> is constant and is appended
+	 * to the localization text. The mnemonic character is appended (within
+	 * parentheses) to that String, if the character is not contained in the
+	 * localization text.
+	 * 
+	 * @see #setMnemonic(AbstractButton, String, char)
+	 * @param ab
+	 *            The abstract button.
+	 * @param s
+	 *            The key of the String to be used in the
+	 *            Messages_xx.properties.xml.
+	 * @param mn
+	 *            The mnemonic character to be set.
+	 * @param add
+	 *            A constant postfix, that is appended to the String retrieved
+	 *            from the {@link I18n}.
+	 */
+	private void setMnemonic(AbstractButton ab, String s, char mn, String add) {
+		s = I18n.getInstance().getString(s) + add;
+		if (!s.toLowerCase().contains(String.valueOf(mn).toLowerCase())) {
+			s += " (" + mn + ")";
+		}
+		ab.setText(s);
+		ab.setMnemonic(mn);
 	}
 
 	/**
