@@ -31,6 +31,7 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.Vector;
+import java.util.concurrent.ExecutionException;
 
 import javax.swing.AbstractButton;
 import javax.swing.JFileChooser;
@@ -42,6 +43,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.SwingWorker;
+import javax.swing.Timer;
 import javax.swing.WindowConstants;
 import javax.swing.table.DefaultTableModel;
 
@@ -71,7 +74,7 @@ public class MainWindow extends JFrame implements DataPresenter {
 			I18n.getInstance().getString("state"),
 			I18n.getInstance().getString("date"), "File" };
 
-	private Thread listUpdater;
+	private Timer listUpdater;
 	private int runningThreads = 0;
 
 	public MainWindow() {
@@ -353,19 +356,12 @@ public class MainWindow extends JFrame implements DataPresenter {
 
 		this.setVisible(true);
 
-		this.listUpdater = new Thread(new Runnable() {
+		this.listUpdater = new Timer(30000, new ActionListener() {
 			@Override
-			public void run() {
-				while (true) {
-					try {
-						try {
-							ClientMain.getServerConnector().getFileList();
-						} catch (Exception e) {
-						}
-						Thread.sleep(30000L);
-					} catch (InterruptedException e) {
-						return;
-					}
+			public void actionPerformed(ActionEvent e) {
+				try {
+					ClientMain.getServerConnector().getFileList();
+				} catch (Exception ignore) {
 				}
 			}
 		});
@@ -390,7 +386,7 @@ public class MainWindow extends JFrame implements DataPresenter {
 
 	@Override
 	public void dispose() {
-		this.listUpdater.interrupt();
+		this.listUpdater.stop();
 		super.dispose();
 	}
 
@@ -420,42 +416,70 @@ public class MainWindow extends JFrame implements DataPresenter {
 	 * Performs the actual deletion of a {@link CloudFile};
 	 */
 	private void performDelete() {
-		final CloudFile cf = this.clickedCloudFile;
 		registerThread(true);
-		new Thread(new Runnable() {
+		final CloudFile cf = this.clickedCloudFile;
+		new SwingWorker<Exception, String>() {
+			ServerConnector sc = ClientMain.getServerConnector();
+
 			@Override
-			public void run() {
+			protected Exception doInBackground() throws Exception {
 				try {
-					ServerConnector sc = ClientMain.getServerConnector();
-					if (sc != null) {
+					if (this.sc != null) {
 						System.out.println("delete: " + cf);
 						try {
-							I18n i = I18n.getInstance();
 							cf.delete();
-							JOptionPane.showMessageDialog(
-									MainWindow.this,
-									i.getString("deletionSuccessMessage")
-											+ cf.getName(),
-									i.getString("success"),
-									JOptionPane.INFORMATION_MESSAGE);
-							sc.getFileList();
+							return null;
 						} catch (IOException e1) {
-							showError(e1);
+							return e1;
 						} catch (HTTPException e1) {
-							showError(e1);
+							return e1;
 						}
 					}
 				} finally {
 					registerThread(false);
 				}
+				return new Exception();
 			}
-		}).start();
+
+			@Override
+			protected void done() {
+				Exception e = null;
+				try {
+					e = get();
+				} catch (InterruptedException e1) {
+					return;
+				} catch (ExecutionException e1) {
+					return;
+				}
+				I18n i = I18n.getInstance();
+				if (e == null) {
+					JOptionPane.showMessageDialog(
+							MainWindow.this,
+							i.getString("deletionSuccessMessage")
+									+ cf.getName(), i.getString("success"),
+							JOptionPane.INFORMATION_MESSAGE);
+				} else if (e instanceof IOException) {
+					showError((IOException) e);
+				} else if (e instanceof HTTPException) {
+					showError((HTTPException) e);
+				} else {
+					return;
+				}
+				if (this.sc != null) {
+					try {
+						this.sc.getFileList();
+					} catch (Exception ignore) {
+					}
+				}
+			}
+		}.execute();
 	}
 
 	/**
 	 * Performs the actual download of a {@link CloudFile};
 	 */
 	private void performDownload() {
+		registerThread(true);
 		final CloudFile cf = this.clickedCloudFile;
 		JFileChooser fc = new JFileChooser();
 		fc.setSelectedFile(new File(cf.getName()));
@@ -464,35 +488,55 @@ public class MainWindow extends JFrame implements DataPresenter {
 			return;
 		}
 		final File f = fc.getSelectedFile();
-		registerThread(true);
-		new Thread(new Runnable() {
+		new SwingWorker<Exception, String>() {
+			ServerConnector sc = ClientMain.getServerConnector();
+
 			@Override
-			public void run() {
+			protected Exception doInBackground() throws Exception {
 				try {
-					ServerConnector sc = ClientMain.getServerConnector();
-					if (sc != null) {
+					if (this.sc != null) {
 						System.out.println("download: " + cf);
 						try {
-							I18n i = I18n.getInstance();
-							System.out.println(f.getAbsolutePath());
 							cf.downloadTo(f);
-							JOptionPane.showMessageDialog(
-									MainWindow.this,
-									i.getString("downloadSuccessMessage")
-											+ cf.getName(),
-									i.getString("success"),
-									JOptionPane.INFORMATION_MESSAGE);
+							return null;
 						} catch (IOException e1) {
-							showError(e1);
+							return e1;
 						} catch (HTTPException e1) {
-							showError(e1);
+							return e1;
 						}
 					}
 				} finally {
 					registerThread(false);
 				}
+				return new Exception();
 			}
-		}).start();
+
+			@Override
+			protected void done() {
+				Exception e = null;
+				try {
+					e = get();
+				} catch (InterruptedException e1) {
+					return;
+				} catch (ExecutionException e1) {
+					return;
+				}
+				I18n i = I18n.getInstance();
+				if (e == null) {
+					JOptionPane.showMessageDialog(
+							MainWindow.this,
+							i.getString("downloadSuccessMessage")
+									+ cf.getName(), i.getString("success"),
+							JOptionPane.INFORMATION_MESSAGE);
+				} else if (e instanceof IOException) {
+					showError((IOException) e);
+				} else if (e instanceof HTTPException) {
+					showError((HTTPException) e);
+				} else {
+					return;
+				}
+			}
+		}.execute();
 	}
 
 	/**
