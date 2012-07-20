@@ -55,8 +55,93 @@ import de.dhbw_mannheim.cloudraid.client.api.ServerConnector;
 
 public class MainWindow extends JFrame implements DataPresenter {
 
-	private static final long serialVersionUID = 7714408179804838679L;
+	/**
+	 * A {@link SwingWorker} implementation for downloading or deleting a
+	 * {@link CloudFile}. The action that will be executed is dependent on the
+	 * constructor used.
+	 * 
+	 * @author Florian Bausch
+	 * 
+	 */
+	private class DownloadDeleteWorker extends SwingWorker<Exception, String> {
+		private ServerConnector sc = ClientMain.getServerConnector();
+		private CloudFile cf;
+		private File to;
+		private boolean download;
+		private String msg;
 
+		/**
+		 * Creates a worker deleting a {@link CloudFile}.
+		 * 
+		 * @param delete
+		 *            The {@link CloudFile} to be deleted.
+		 */
+		public DownloadDeleteWorker(CloudFile delete) {
+			this.cf = delete;
+			this.download = false;
+			this.msg = I18n.getInstance().getString("deletionSuccessMessage")
+					+ this.cf.getName();
+			System.out.println("delete: " + this.cf);
+		}
+
+		/**
+		 * Creates a worker downloading a {@link CloudFile}.
+		 * 
+		 * @param download
+		 *            The {@link CloudFile} to be downloaded.
+		 * @param to
+		 *            The File were it is written to.
+		 */
+		public DownloadDeleteWorker(CloudFile download, File to) {
+			this.cf = download;
+			this.to = to;
+			this.download = true;
+			this.msg = I18n.getInstance().getString("downloadSuccessMessage")
+					+ this.cf.getName();
+			System.out.println("download: " + this.cf);
+		}
+
+		@Override
+		protected Exception doInBackground() throws Exception {
+			if (this.sc == null) {
+				return new Exception();
+			}
+			try {
+				if (this.download) {
+					this.cf.downloadTo(this.to);
+				} else {
+					this.cf.delete();
+				}
+			} catch (IOException e1) {
+				return e1;
+			} catch (HTTPException e1) {
+				return e1;
+			}
+			return null;
+		}
+
+		@Override
+		protected void done() {
+			Exception e = new Exception();
+			try {
+				e = get();
+			} catch (InterruptedException e1) {
+			} catch (ExecutionException e1) {
+			}
+			if (e == null) {
+				JOptionPane.showMessageDialog(MainWindow.this, this.msg, I18n
+						.getInstance().getString("success"),
+						JOptionPane.INFORMATION_MESSAGE);
+			} else if (e instanceof IOException) {
+				showError((IOException) e);
+			} else if (e instanceof HTTPException) {
+				showError((HTTPException) e);
+			}
+			registerThread(false);
+		}
+	}
+
+	private static final long serialVersionUID = 7714408179804838679L;
 	private JMenuBar menuBar;
 	private JMenu fileMenu = new JMenu();
 	private JMenuItem connectItem = new JMenuItem(),
@@ -69,12 +154,13 @@ public class MainWindow extends JFrame implements DataPresenter {
 	private JPopupMenu popup;
 	private JScrollPane scrollPane;
 	private CloudFile clickedCloudFile;
+
 	private static final String[] HEADINGS = new String[] {
 			I18n.getInstance().getString("name"),
 			I18n.getInstance().getString("state"),
 			I18n.getInstance().getString("date"), "File" };
-
 	private Timer listUpdater;
+
 	private int runningThreads = 0;
 
 	public MainWindow() {
@@ -419,126 +505,22 @@ public class MainWindow extends JFrame implements DataPresenter {
 	 */
 	private void performDelete() {
 		registerThread(true);
-		final CloudFile cf = this.clickedCloudFile;
-		new SwingWorker<Exception, String>() {
-			ServerConnector sc = ClientMain.getServerConnector();
-
-			@Override
-			protected Exception doInBackground() throws Exception {
-				try {
-					if (this.sc != null) {
-						System.out.println("delete: " + cf);
-						try {
-							cf.delete();
-							return null;
-						} catch (IOException e1) {
-							return e1;
-						} catch (HTTPException e1) {
-							return e1;
-						}
-					}
-				} finally {
-					registerThread(false);
-				}
-				return new Exception();
-			}
-
-			@Override
-			protected void done() {
-				Exception e = null;
-				try {
-					e = get();
-				} catch (InterruptedException e1) {
-					return;
-				} catch (ExecutionException e1) {
-					return;
-				}
-				I18n i = I18n.getInstance();
-				if (e == null) {
-					JOptionPane.showMessageDialog(
-							MainWindow.this,
-							i.getString("deletionSuccessMessage")
-									+ cf.getName(), i.getString("success"),
-							JOptionPane.INFORMATION_MESSAGE);
-				} else if (e instanceof IOException) {
-					showError((IOException) e);
-				} else if (e instanceof HTTPException) {
-					showError((HTTPException) e);
-				} else {
-					return;
-				}
-				if (this.sc != null) {
-					try {
-						this.sc.getFileList();
-					} catch (Exception ignore) {
-					}
-				}
-			}
-		}.execute();
+		new DownloadDeleteWorker(this.clickedCloudFile).execute();
 	}
 
 	/**
 	 * Performs the actual download of a {@link CloudFile};
 	 */
 	private void performDownload() {
-		registerThread(true);
-		final CloudFile cf = this.clickedCloudFile;
+		CloudFile cf = this.clickedCloudFile;
 		JFileChooser fc = new JFileChooser();
 		fc.setSelectedFile(new File(cf.getName()));
-		int state = fc.showSaveDialog(MainWindow.this);
+		int state = fc.showSaveDialog(this);
 		if (state != JFileChooser.APPROVE_OPTION) {
 			return;
 		}
-		final File f = fc.getSelectedFile();
-		new SwingWorker<Exception, String>() {
-			ServerConnector sc = ClientMain.getServerConnector();
-
-			@Override
-			protected Exception doInBackground() throws Exception {
-				try {
-					if (this.sc != null) {
-						System.out.println("download: " + cf);
-						try {
-							cf.downloadTo(f);
-							return null;
-						} catch (IOException e1) {
-							return e1;
-						} catch (HTTPException e1) {
-							return e1;
-						}
-					}
-				} finally {
-					registerThread(false);
-				}
-				return new Exception();
-			}
-
-			@Override
-			protected void done() {
-				Exception e = null;
-				try {
-					e = get();
-				} catch (InterruptedException e1) {
-					return;
-				} catch (ExecutionException e1) {
-					return;
-				}
-				I18n i = I18n.getInstance();
-				if (e == null) {
-					JOptionPane.showMessageDialog(
-							MainWindow.this,
-							i.getString("downloadSuccessMessage")
-									+ cf.getName(), i.getString("success"),
-							JOptionPane.INFORMATION_MESSAGE);
-				} else if (e instanceof IOException) {
-					showError((IOException) e);
-				} else if (e instanceof HTTPException) {
-					showError((HTTPException) e);
-				} else {
-					return;
-				}
-			}
-		}.execute();
+		registerThread(true);
+		new DownloadDeleteWorker(cf, fc.getSelectedFile()).execute();
 	}
 
 	/**
