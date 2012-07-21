@@ -768,19 +768,15 @@ public class ServerConnector {
 	 */
 	private int validateProtocol() throws IOException {
 		int resp = -1;
-		try {
-			resp = this.sendDummyRequest();
-		} catch (SSLException e) {
-			if (this.sc.isSecureConnection()) {
-				throw e;
+		resp = this.sendDummyRequest();
+		if (!this.sc.isSecureConnection()) {
+			// Check, if HTTPS can be used.
+			this.sc.setSecureConnection(true);
+			try {
+				resp = this.sendDummyRequest();
+			} catch (SSLException e) {
+				this.sc.setSecureConnection(false);
 			}
-		}
-		// Check, if HTTPS can be used.
-		this.sc.setSecureConnection(true);
-		try {
-			resp = this.sendDummyRequest();
-		} catch (SSLException e) {
-			this.sc.setSecureConnection(false);
 		}
 		return resp;
 	}
