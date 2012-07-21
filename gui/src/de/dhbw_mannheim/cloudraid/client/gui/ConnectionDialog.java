@@ -219,7 +219,8 @@ public class ConnectionDialog extends JDialog {
 			JOptionPane.showMessageDialog(this, i.getString("apiVersionError"));
 			return;
 		} catch (IOException e) {
-			JOptionPane.showMessageDialog(this, i.getString("connectionError"));
+			JOptionPane.showMessageDialog(this, i.getString("connectionError")
+					+ "\n" + e.getMessage());
 			return;
 		}
 		this.dispose();

@@ -35,7 +35,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
-import java.net.ProtocolException;
 import java.net.URLEncoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -160,8 +159,8 @@ public class ServerConnector {
 	public ServerConnector(ServerConnection sc)
 			throws IncompatibleApiVersionException, IOException {
 		this.sc = sc;
-		if (!validateProtocol()) {
-			throw new ProtocolException();
+		if (validateProtocol() != 200) {
+			throw new IOException("Unexpected response from server.");
 		}
 		if (!validateApi()) {
 			throw new IncompatibleApiVersionException();
@@ -669,20 +668,18 @@ public class ServerConnector {
 	 * HTTP status code.
 	 * 
 	 * @return The HTTP status code.
+	 * @throws IOException
+	 * @throws SSLException
 	 */
-	private int sendDummyRequest() {
+	private int sendDummyRequest() throws IOException, SSLException {
 		int resp = -1;
+		HttpURLConnection con = (HttpURLConnection) this.sc
+				.getURL("/api/info/").openConnection();
 		try {
-			HttpURLConnection con = (HttpURLConnection) this.sc.getURL(
-					"/api/info/").openConnection();
-			try {
-				con.connect();
-				resp = con.getResponseCode();
-			} catch (SSLException ignore) {
-			} finally {
-				con.disconnect();
-			}
-		} catch (IOException ignore) {
+			con.connect();
+			resp = con.getResponseCode();
+		} finally {
+			con.disconnect();
 		}
 		return resp;
 	}
@@ -767,21 +764,24 @@ public class ServerConnector {
 	 * 
 	 * @return true, if the CloudRAID server supports the given protocol (or
 	 *         HTTPS), false otherwise.
+	 * @throws IOException
 	 */
-	private boolean validateProtocol() {
-		int resp = this.sendDummyRequest();
-		if (this.sc.isSecureConnection()) {
-			return resp == 200;
+	private int validateProtocol() throws IOException {
+		int resp = -1;
+		try {
+			resp = this.sendDummyRequest();
+		} catch (SSLException e) {
+			if (this.sc.isSecureConnection()) {
+				throw e;
+			}
 		}
 		// Check, if HTTPS can be used.
-		boolean httpWorked = resp == 200;
 		this.sc.setSecureConnection(true);
-		resp = this.sendDummyRequest();
-		if (resp == 200) {
-			return true;
-		} else {
+		try {
+			resp = this.sendDummyRequest();
+		} catch (SSLException e) {
 			this.sc.setSecureConnection(false);
-			return httpWorked;
 		}
+		return resp;
 	}
 }

@@ -132,6 +132,10 @@ public class MainWindow extends JFrame implements DataPresenter {
 				JOptionPane.showMessageDialog(MainWindow.this, this.msg, I18n
 						.getInstance().getString("success"),
 						JOptionPane.INFORMATION_MESSAGE);
+				try {
+					this.sc.getFileList();
+				} catch (Exception e1) {
+				}
 			} else if (e instanceof IOException) {
 				showError((IOException) e);
 			} else if (e instanceof HTTPException) {
