@@ -672,16 +672,14 @@ public class ServerConnector {
 	 * @throws SSLException
 	 */
 	private int sendDummyRequest() throws IOException, SSLException {
-		int resp = -1;
 		HttpURLConnection con = (HttpURLConnection) this.sc
 				.getURL("/api/info/").openConnection();
 		try {
 			con.connect();
-			resp = con.getResponseCode();
+			return con.getResponseCode();
 		} finally {
 			con.disconnect();
 		}
-		return resp;
 	}
 
 	/**
@@ -762,13 +760,12 @@ public class ServerConnector {
 	 * HTTPS is given, but would not work, the protocol is <em>not</em> changed
 	 * to HTTP for security reasons.
 	 * 
-	 * @return true, if the CloudRAID server supports the given protocol (or
-	 *         HTTPS), false otherwise.
+	 * @return Returns the status code of the last successful request to the
+	 *         server.
 	 * @throws IOException
 	 */
 	private int validateProtocol() throws IOException {
-		int resp = -1;
-		resp = this.sendDummyRequest();
+		int resp = this.sendDummyRequest();
 		if (!this.sc.isSecureConnection()) {
 			// Check, if HTTPS can be used.
 			this.sc.setSecureConnection(true);

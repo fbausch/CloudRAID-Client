@@ -42,4 +42,8 @@
 	<entry key="credits">Credentials</entry>
 	<entry key="creditsText">This program is published under the Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0.txt).
 	Authors: Florian Bausch and Markus Holtermann</entry>
+	<entry key="deleteConfirm">Do you really want to delete this file?</entry>
+	<entry key="deleteConfirmTitle">Confirm deletion</entry>
+	<entry key="overwriteConfirm">Do you really want to overwrite this file?</entry>
+	<entry key="overwriteConfirmTitle">Confirm overwriting</entry>
 </properties>

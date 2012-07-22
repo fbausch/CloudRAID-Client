@@ -508,6 +508,14 @@ public class MainWindow extends JFrame implements DataPresenter {
 	 * Performs the actual deletion of a {@link CloudFile};
 	 */
 	private void performDelete() {
+		I18n i = I18n.getInstance();
+		int state = JOptionPane.showConfirmDialog(this,
+				i.getString("deleteConfirm"),
+				i.getString("deleteConfirmTitle"), JOptionPane.YES_NO_OPTION,
+				JOptionPane.QUESTION_MESSAGE);
+		if (state != JOptionPane.YES_OPTION) {
+			return;
+		}
 		registerThread(true);
 		new DownloadDeleteWorker(this.clickedCloudFile).execute();
 	}
@@ -517,11 +525,21 @@ public class MainWindow extends JFrame implements DataPresenter {
 	 */
 	private void performDownload() {
 		CloudFile cf = this.clickedCloudFile;
+		I18n i = I18n.getInstance();
 		JFileChooser fc = new JFileChooser();
 		fc.setSelectedFile(new File(cf.getName()));
 		int state = fc.showSaveDialog(this);
 		if (state != JFileChooser.APPROVE_OPTION) {
 			return;
+		}
+		if (fc.getSelectedFile().exists()) {
+			state = JOptionPane.showConfirmDialog(this,
+					i.getString("overwriteConfirm"),
+					i.getString("overwriteConfirmTitle"),
+					JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+			if (state != JOptionPane.YES_OPTION) {
+				return;
+			}
 		}
 		registerThread(true);
 		new DownloadDeleteWorker(cf, fc.getSelectedFile()).execute();

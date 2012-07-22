@@ -42,4 +42,8 @@
 	<entry key="credits">Lizenz</entry>
 	<entry key="creditsText">Dieses Programm wurde unter der Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0.txt) veröffentlicht.
 	Autoren: Florian Bausch und Markus Holtermann</entry>
+	<entry key="deleteConfirm">Soll diese Datei wirklich gelöscht werden?</entry>
+	<entry key="deleteConfirmTitle">Löschen bestätigen</entry>
+	<entry key="overwriteConfirm">Soll diese Datei wirklich überschrieben werden?/entry>
+	<entry key="overwriteConfirmTitle">Überschreiben bestätigen</entry>
 </properties>
