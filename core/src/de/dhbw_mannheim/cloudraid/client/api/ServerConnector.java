@@ -581,7 +581,7 @@ public class ServerConnector {
 	 * @param inFile
 	 *            The file to read the data from.
 	 * @param update
-	 *            Set to <code>true</code, if the file shall be
+	 *            Set to <code>true</code>, if the file shall be
 	 *            updated/overwritten.
 	 * @throws IOException
 	 * @throws HTTPException
@@ -591,10 +591,13 @@ public class ServerConnector {
 		path = urlEncodeFileNames(path);
 		HttpURLConnection con = (HttpURLConnection) this.sc.getURL(
 				"/file/" + path + "/").openConnection();
+		String kind;
 		if (update) {
 			con.setRequestMethod(ServerConnector.PUT);
+			kind = "put: ";
 		} else {
 			con.setRequestMethod(ServerConnector.POST);
+			kind = "post: ";
 		}
 		con.setRequestProperty(ServerConnector.COOKIE, this.session);
 		con.setRequestProperty(ServerConnector.CONTENT_LENGTH,
@@ -615,17 +618,17 @@ public class ServerConnector {
 			case 201:
 				break;
 			case 401:
-				throw new HTTPException(401, "put: " + ServerConnector.HTTP401);
+				throw new HTTPException(401, kind + ServerConnector.HTTP401);
 			case 404:
-				throw new HTTPException(404, "put: " + ServerConnector.HTTP404);
+				throw new HTTPException(404, kind + ServerConnector.HTTP404);
 			case 405:
-				throw new HTTPException(405, "put: " + ServerConnector.HTTP405);
+				throw new HTTPException(405, kind + ServerConnector.HTTP405);
 			case 409:
-				throw new HTTPException(409, "put: " + ServerConnector.HTTP409);
+				throw new HTTPException(409, kind + ServerConnector.HTTP409);
 			case 411:
-				throw new HTTPException(411, "put: " + ServerConnector.HTTP411);
+				throw new HTTPException(411, kind + ServerConnector.HTTP411);
 			case 503:
-				throw new HTTPException(503, "put: " + ServerConnector.HTTP503);
+				throw new HTTPException(503, kind + ServerConnector.HTTP503);
 			default:
 				throw new HTTPException(con.getResponseCode(), "put: "
 						+ ServerConnector.HTTP_UNKNOWN);

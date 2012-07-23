@@ -66,6 +66,10 @@ public class CLIMain {
 	 */
 	private static File workingDir = new File("./");
 
+	private static Console c = System.console();
+	private static BufferedReader in = new BufferedReader(
+			new InputStreamReader(System.in));
+
 	/**
 	 * The String representation of the working directory {@link File} object.
 	 */
@@ -79,8 +83,6 @@ public class CLIMain {
 	private static void interactive() throws IncompatibleApiVersionException {
 		CLIMain.printLicense();
 		System.out.println("Type \"help\" for help.");
-		Console c = System.console();
-		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 		String[] commands;
 		Runnable lister = new Runnable() {
 			@Override
@@ -108,7 +110,7 @@ public class CLIMain {
 			System.out.print("craid> ");
 			String command = "";
 			try {
-				command = in.readLine().trim();
+				command = CLIMain.in.readLine().trim();
 			} catch (IOException e1) {
 				System.out.println("Error while reading your command.");
 				return;
@@ -129,16 +131,11 @@ public class CLIMain {
 				} else {
 					System.out.println("Enter password:");
 					String pw = "";
-					if (c == null) {
-						try {
-							pw = in.readLine();
-						} catch (IOException e) {
-							System.out
-									.println("Error while reading the password.");
-							return;
-						}
-					} else {
-						pw = String.valueOf(c.readPassword());
+					try {
+						pw = readPassword();
+					} catch (IOException e) {
+						System.out.println("Error while reading the password.");
+						return;
 					}
 					try {
 						CLIMain.sc = new ServerConnector(new ServerConnection(
@@ -167,23 +164,16 @@ public class CLIMain {
 				if (commands.length != 4) {
 					System.out.println("Invalid syntax.");
 				} else {
-					System.out.println("Enter password:");
 					String pw = "";
 					String pw2 = "";
-					if (c == null) {
-						try {
-							pw = in.readLine();
-							System.out.println("Confirm password:");
-							pw2 = in.readLine();
-						} catch (IOException e) {
-							System.out
-									.println("Error while reading the password.");
-							return;
-						}
-					} else {
-						pw = String.valueOf(c.readPassword());
+					try {
+						System.out.println("Enter password:");
+						pw = readPassword();
 						System.out.println("Confirm password:");
-						pw2 = String.valueOf(c.readPassword());
+						pw2 = readPassword();
+					} catch (IOException e) {
+						System.out.println("Error while reading the password.");
+						return;
 					}
 					try {
 						CLIMain.sc = new ServerConnector(new ServerConnection(
@@ -251,7 +241,7 @@ public class CLIMain {
 					}
 				} // Check for download of file
 				else if (command.startsWith("get ")) {
-					commands = command.split(" ", 2);
+					commands = split(command);
 					if (commands.length != 2) {
 						System.out.println("Invalid syntax.");
 					} else {
@@ -276,16 +266,14 @@ public class CLIMain {
 							System.out.println("Could not connect to server.");
 						}
 					}
-				} // Check for upload of file
-				else if (command.startsWith("put ")) {
-					upload(command.split(" ", 3), false, CLIMain.sc);
-				} // Check for update of file
-				else if (command.startsWith("update ")) {
-					upload(command.split(" ", 3), true, CLIMain.sc);
+				} // Check for upload or update of file
+				else if (command.startsWith("upload ")
+						|| command.startsWith("update ")) {
+					upload(command, CLIMain.sc);
 				} // Check for deletion of file {
 				else if (command.startsWith("delete ")
 						|| command.startsWith("rm ")) {
-					commands = command.split(" ", 2);
+					commands = split(command);
 					if (commands.length != 2) {
 						System.out.println("Invalid syntax.");
 					} else {
@@ -303,17 +291,9 @@ public class CLIMain {
 					try {
 						String pw, pw2;
 						System.out.println("Enter new password:");
-						if (c == null) {
-							pw = in.readLine();
-						} else {
-							pw = String.valueOf(c.readPassword());
-						}
+						pw = readPassword();
 						System.out.println("Confirm new password:");
-						if (c == null) {
-							pw2 = in.readLine();
-						} else {
-							pw2 = String.valueOf(c.readPassword());
-						}
+						pw2 = readPassword();
 						CLIMain.sc.changePassword(pw, pw2);
 					} catch (IOException e) {
 						System.out.println("Could not change password.");
@@ -391,64 +371,104 @@ public class CLIMain {
 	private static void printUsage() {
 		System.err.flush();
 		System.out.println("Usage of CloudRAID command-line client:\n");
-		System.out.println("Can always be used:");
+		System.out.println("Use '\\ ' to escape spaces in file names.");
+		System.out.println("\nCan always be used:");
 		System.out.println("* help");
-		System.out.println("  - prints this help.\n");
+		System.out.println("  - prints this help.");
 		System.out.println("* license");
-		System.out.println("  - prints the CloudRAID license information.\n");
+		System.out.println("  - prints the CloudRAID license information.");
 		System.out.println("* version");
-		System.out.println("  - prints the version of this software.\n");
+		System.out.println("  - prints the version of this software.");
 		System.out.println("* exit|quit");
-		System.out.println("  - quits the CloudRAID command-line client.\n");
-		System.out.println("Can be used after startup or after logout:");
+		System.out.println("  - quits the CloudRAID command-line client.");
+		System.out.println("\nCan be used after startup or after logout:");
 		System.out.println("* login <user> <server> <port>");
-		System.out.println("  - creates a session with a CloudRAID server.\n");
+		System.out.println("  - creates a session with a CloudRAID server.");
 		System.out.println("* create <user> <server> <port>");
-		System.out.println("  - creates a user on a CloudRAID server.\n");
-		System.out.println("Can be used after login:");
+		System.out.println("  - creates a user on a CloudRAID server.");
+		System.out.println("\nCan be used after login:");
 		System.out.println("* logout");
 		System.out
-				.println("  - closes an existing session with a CloudRAID server.\n");
+				.println("  - closes an existing session with a CloudRAID server.");
 		System.out.println("* list|ls");
 		System.out
-				.println("  - lists all files of the current user on the server.\n");
+				.println("  - lists all files of the current user on the server.");
 		System.out.println("* get <filename>");
-		System.out.println("  - downloads a file from the server.\n");
+		System.out.println("  - downloads a file from the server.");
 		System.out.println("* delete|rm <filename>");
-		System.out.println("  - deletes a file on the server.\n");
-		System.out.println("* put <filename> <path_to_file>");
-		System.out.println("  - uploads a file to the server.\n");
+		System.out.println("  - deletes a file on the server.");
+		System.out.println("* upload <filename> <path_to_file>");
+		System.out.println("  - uploads a new file to the server.");
 		System.out.println("* update <filename> <path_to_file>");
 		System.out
-				.println("  - uploads _and_ overwrites an existing file on the server.\n");
+				.println("  - uploads _and_ overwrites an existing file on the server.");
 		System.out.println("* changepw");
 		System.out
-				.println("  - changes the password for the user currently logged in.\n");
+				.println("  - changes the password for the user currently logged in.");
 		System.out.println("* server");
 		System.out.println("  - prints server information.");
 	}
 
 	/**
+	 * Reads the password from an available console.
+	 * 
+	 * @return The password read.
+	 * @throws IOException
+	 */
+	private static String readPassword() throws IOException {
+		if (CLIMain.c == null) {
+			return CLIMain.in.readLine();
+		} else {
+			return String.valueOf(CLIMain.c.readPassword());
+		}
+	}
+
+	/**
+	 * Splits the String on spaces but not on spaces preceded by backslashes.
+	 * 
+	 * @param toSplit
+	 *            The String to split.
+	 * @return The split String.
+	 */
+	private static String[] split(String toSplit) {
+		String[] split = toSplit.replace("\\ ", "\n").split(" ");
+		for (int i = 0; i < split.length; i++) {
+			split[i] = split[i].replace("\n", " ");
+		}
+		return split;
+
+	}
+
+	/**
 	 * Executes the upload command and handles {@link Exception}s.
 	 * 
-	 * @param args
-	 *            The argument Array.
-	 * @param update
-	 *            indicates, if new upload or update.
+	 * @param command
+	 *            The put or update command.
 	 * @param sc
 	 *            The {@link ServerConnector} holding the connection
 	 *            information.
 	 */
-	private static void upload(String[] args, boolean update, ServerConnector sc) {
-		if (args.length == 3) {
-			File f = new File(args[2]);
+	private static void upload(String command, ServerConnector sc) {
+		boolean update;
+		if (command.startsWith("upload ")) {
+			update = false;
+		} else if (command.startsWith("update ")) {
+			update = true;
+		} else {
+			System.out.println("Invalid syntax.");
+			return;
+		}
+		command = command.substring(7);
+		String[] args = split(command);
+		if (args.length == 2) {
+			File f = new File(args[1]);
 			if (!f.exists()) {
 				System.out.println("File does not exist. ("
 						+ f.getAbsolutePath() + ")");
 				return;
 			}
 			try {
-				sc.putFile(args[1], f, update);
+				sc.putFile(args[0], f, update);
 			} catch (IOException e) {
 				System.out.println("Could not upload your file.");
 			} catch (HTTPException e) {
