@@ -24,6 +24,7 @@ package de.dhbw_mannheim.cloudraid.client.api;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
@@ -33,6 +34,12 @@ import java.util.Date;
  * 
  */
 public class CloudFile {
+
+	/**
+	 * The date format used by the CloudRAID server.
+	 */
+	private SimpleDateFormat cloudraidDateFormat = new SimpleDateFormat(
+			"yyyy-MM-dd hh:mm:ss.S");
 
 	private Date lastMod;
 	private String name, state, hashedName;
@@ -111,7 +118,7 @@ public class CloudFile {
 	 * @return The last modification date as String.
 	 */
 	public String getLastModAsString() {
-		return ServerConnector.CLOUDRAID_DATE_FORMAT.format(this.lastMod);
+		return this.cloudraidDateFormat.format(this.lastMod);
 	}
 
 	/**
@@ -149,7 +156,7 @@ public class CloudFile {
 	@Override
 	public String toString() {
 		return this.name + " (" + this.hashedName + "), updated on "
-				+ ServerConnector.CLOUDRAID_DATE_FORMAT.format(this.lastMod)
-				+ ", " + this.state + ". ServerConnector: " + this.sc;
+				+ this.cloudraidDateFormat.format(this.lastMod) + ", "
+				+ this.state + ". ServerConnector: " + this.sc;
 	}
 }

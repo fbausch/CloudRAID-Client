@@ -59,7 +59,7 @@ public class ServerConnector {
 	/**
 	 * The date format used by the CloudRAID server.
 	 */
-	public static final SimpleDateFormat CLOUDRAID_DATE_FORMAT = new SimpleDateFormat(
+	private SimpleDateFormat cloudraidDateFormat = new SimpleDateFormat(
 			"yyyy-MM-dd hh:mm:ss.S");
 
 	/**
@@ -260,8 +260,9 @@ public class ServerConnector {
 			case 406:
 				throw new HTTPException(406, ServerConnector.HTTP406);
 			case 500:
-				throw new HTTPException(500,
-						"error while adding user to database");
+				throw new HTTPException(500, "error while "
+						+ "adding user to database or the creation of "
+						+ "new users is disabled by the server administrator");
 			default:
 				throw new HTTPException(con.getResponseCode(),
 						ServerConnector.HTTP_UNKNOWN);
@@ -375,6 +376,9 @@ public class ServerConnector {
 		try {
 			switch (con.getResponseCode()) {
 			case 200:
+				if (destination.exists()) {
+					destination.delete();
+				}
 				is = con.getInputStream();
 				os = new FileOutputStream(destination);
 				byte[] buf = new byte[4096];
@@ -436,6 +440,7 @@ public class ServerConnector {
 						con.getInputStream()));
 				String line;
 				while ((line = br.readLine()) != null) {
+					System.out.println(line);
 					if ("".equals(line) || line.length() < 3) {
 						continue;
 					}
@@ -451,8 +456,7 @@ public class ServerConnector {
 					}
 					Date date;
 					try {
-						date = ServerConnector.CLOUDRAID_DATE_FORMAT
-								.parse(parts[2]);
+						date = this.cloudraidDateFormat.parse(parts[2]);
 					} catch (ParseException e) {
 						continue;
 					}
