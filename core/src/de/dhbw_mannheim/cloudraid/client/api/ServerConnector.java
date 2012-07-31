@@ -23,12 +23,9 @@
 package de.dhbw_mannheim.cloudraid.client.api;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -42,6 +39,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Vector;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 import javax.net.ssl.SSLException;
 
@@ -63,13 +61,6 @@ public class ServerConnector {
 	private SimpleDateFormat cloudraidDateFormat = new SimpleDateFormat(
 			"yyyy-MM-dd hh:mm:ss.S");
 
-	/**
-	 * The top-level path to the programs config.
-	 */
-	private static String CLOUDRAID_HOME = System.getProperty("os.name")
-			.contains("windows") ? System.getenv("APPDATA")
-			+ "\\cloudraid-client\\" : System.getProperty("user.home")
-			+ "/.config/cloudraid-client/";
 	private static final String GET = "GET", POST = "POST", DELETE = "DELETE",
 			PUT = "PUT";
 	private static final String HTTP401 = "not logged in",
@@ -85,36 +76,6 @@ public class ServerConnector {
 			CONTENT_LENGTH = "Content-Length", CONFIRM = "X-Confirm";
 
 	private static final String ENCODING = "utf-8";
-
-	/**
-	 * Restores the session data from a file.
-	 * 
-	 * @throws IncompatibleApiVersionException
-	 */
-	public static ServerConnector restoreSession()
-			throws IncompatibleApiVersionException {
-		BufferedReader br = null;
-		ServerConnector newCon = null;
-		try {
-			File sessionFile = new File(ServerConnector.CLOUDRAID_HOME
-					+ "/session");
-			br = new BufferedReader(new FileReader(sessionFile));
-			ServerConnection sc = new ServerConnection(br.readLine(),
-					br.readLine(), br.readLine(), Short.parseShort(br
-							.readLine()));
-			newCon = new ServerConnector(sc);
-			newCon.setSession(br.readLine());
-		} catch (IOException e) {
-			// TODO
-			e.printStackTrace();
-		} finally {
-			try {
-				br.close();
-			} catch (IOException ignore) {
-			}
-		}
-		return newCon;
-	}
 
 	/**
 	 * Encodes a file name so that it can be sent to the CloudRAID server.
@@ -553,10 +514,8 @@ public class ServerConnector {
 		try {
 			switch (con.getResponseCode()) {
 			case 200:
-				removeSession();
 				break;
 			case 401:
-				removeSession();
 				throw new HTTPException(401, "logout: "
 						+ ServerConnector.HTTP401);
 			case 405:
@@ -564,7 +523,6 @@ public class ServerConnector {
 				throw new HTTPException(405, "logout: "
 						+ ServerConnector.HTTP405);
 			case 503:
-				removeSession();
 				throw new HTTPException(503, "logout: "
 						+ ServerConnector.HTTP503);
 			default:
@@ -606,13 +564,14 @@ public class ServerConnector {
 			con.setRequestMethod(ServerConnector.POST);
 			kind = "post: ";
 		}
+		con.setRequestProperty("Accept-Encoding", "gzip");
 		con.setRequestProperty(ServerConnector.COOKIE, this.session);
 		con.setRequestProperty(ServerConnector.CONTENT_LENGTH,
 				String.valueOf(inFile.length()));
 		con.setDoOutput(true);
 		con.connect();
 		InputStream is = new FileInputStream(inFile);
-		OutputStream os = con.getOutputStream();
+		OutputStream os = new GZIPOutputStream(con.getOutputStream());
 		try {
 			byte[] buf = new byte[4096];
 			int len;
@@ -664,16 +623,6 @@ public class ServerConnector {
 	}
 
 	/**
-	 * Removes a stored session from the file system.
-	 */
-	private void removeSession() {
-		File sessionFile = new File(ServerConnector.CLOUDRAID_HOME + "/session");
-		if (sessionFile.exists()) {
-			sessionFile.delete();
-		}
-	}
-
-	/**
 	 * Sends a dummy request to the CloudRAID server and returns the regarding
 	 * HTTP status code.
 	 * 
@@ -692,54 +641,9 @@ public class ServerConnector {
 		}
 	}
 
-	/**
-	 * Sets the session for the {@link ServerConnector}. Use this to restore a
-	 * session.
-	 * 
-	 * @param session
-	 */
-	private void setSession(String session) {
-		this.session = session;
-	}
-
-	/**
-	 * Saves the session data to a file.
-	 */
-	public void storeSession() {
-		if (this.session == null) {
-			return;
-		}
-		BufferedWriter bw = null;
-		try {
-			File sessionFile = new File(ServerConnector.CLOUDRAID_HOME
-					+ "/session");
-			sessionFile.getParentFile().mkdirs();
-			bw = new BufferedWriter(new FileWriter(sessionFile));
-			bw.write(this.sc.getServer());
-			bw.newLine();
-			bw.write(this.sc.getUser());
-			bw.newLine();
-			bw.write(this.sc.getPassword());
-			bw.newLine();
-			bw.write(String.valueOf(this.sc.getPort()));
-			bw.newLine();
-			bw.write(this.session);
-			bw.newLine();
-		} catch (IOException e) {
-			// TODO
-			e.printStackTrace();
-		} finally {
-			try {
-				bw.close();
-			} catch (IOException ignore) {
-			}
-		}
-	}
-
 	@Override
 	public String toString() {
-		return "[ServerConnection: " + this.sc + "]. Stored session: "
-				+ this.session;
+		return "[ServerConnection: " + this.sc + "]. Session: " + this.session;
 	}
 
 	/**
