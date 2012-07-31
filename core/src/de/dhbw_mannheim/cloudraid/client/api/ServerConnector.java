@@ -41,6 +41,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Vector;
+import java.util.zip.GZIPInputStream;
 
 import javax.net.ssl.SSLException;
 
@@ -54,7 +55,7 @@ public class ServerConnector {
 	/**
 	 * Indicates the compatible CloudRAID API version.
 	 */
-	public static final String API_VERSION = "0.2";
+	public static final String API_VERSION = "0.3";
 
 	/**
 	 * The date format used by the CloudRAID server.
@@ -325,6 +326,7 @@ public class ServerConnector {
 		HttpURLConnection con = null;
 		con = (HttpURLConnection) this.sc.getURL("/api/info/").openConnection();
 		con.setRequestMethod(ServerConnector.GET);
+		con.setRequestProperty("Accept-Encoding", "gzip");
 		con.setDoInput(true);
 		InputStream is = null;
 		StringBuilder sb = new StringBuilder();
@@ -334,7 +336,7 @@ public class ServerConnector {
 				throw new HTTPException(con.getResponseCode(),
 						ServerConnector.HTTP_UNKNOWN);
 			}
-			is = con.getInputStream();
+			is = new GZIPInputStream(con.getInputStream());
 			int c;
 			while ((c = is.read()) != -1) {
 				sb.append((char) c);
@@ -370,6 +372,7 @@ public class ServerConnector {
 		HttpURLConnection con = (HttpURLConnection) this.sc.getURL(
 				"/file/" + path + "/").openConnection();
 		con.setRequestMethod(ServerConnector.GET);
+		con.setRequestProperty("Accept-Encoding", "gzip");
 		con.setRequestProperty(ServerConnector.COOKIE, this.session);
 		con.setDoInput(true);
 		con.connect();
@@ -379,7 +382,7 @@ public class ServerConnector {
 				if (destination.exists()) {
 					destination.delete();
 				}
-				is = con.getInputStream();
+				is = new GZIPInputStream(con.getInputStream());
 				os = new FileOutputStream(destination);
 				byte[] buf = new byte[4096];
 				int len;
@@ -429,6 +432,7 @@ public class ServerConnector {
 		BufferedReader br = null;
 		HttpURLConnection con = (HttpURLConnection) this.sc.getURL("/list/")
 				.openConnection();
+		con.setRequestProperty("Accept-Encoding", "gzip");
 		con.setRequestMethod(ServerConnector.GET);
 		con.setRequestProperty(ServerConnector.COOKIE, this.session);
 		con.connect();
@@ -437,10 +441,9 @@ public class ServerConnector {
 			switch (con.getResponseCode()) {
 			case 200:
 				br = new BufferedReader(new InputStreamReader(
-						con.getInputStream()));
+						new GZIPInputStream(con.getInputStream())));
 				String line;
 				while ((line = br.readLine()) != null) {
-					System.out.println(line);
 					if ("".equals(line) || line.length() < 3) {
 						continue;
 					}
@@ -755,7 +758,7 @@ public class ServerConnector {
 			con.connect();
 			String apiVersion = con.getHeaderField(ServerConnector.POWERED_BY);
 			String wantedVersion = "CloudRAID/" + ServerConnector.API_VERSION;
-			return apiVersion.equals(wantedVersion);
+			return wantedVersion.equals(apiVersion);
 		} finally {
 			con.disconnect();
 		}
