@@ -245,6 +245,12 @@ public class MainWindow extends JFrame implements DataPresenter {
 				if (sc != null) {
 					try {
 						sc.createUser(ucd.getPasswordConfirmation());
+						JOptionPane.showMessageDialog(
+								MainWindow.this,
+								I18n.getInstance().getString(
+										"userCreatedSuccessMessage"), I18n
+										.getInstance().getString("success"),
+								JOptionPane.INFORMATION_MESSAGE);
 					} catch (IOException e1) {
 						MainWindow.this.showError(e1);
 						ClientMain.resetServerConnection();
