@@ -117,7 +117,7 @@ public final class I18n {
 	 * @return A mapping of the locale object to its language string
 	 */
 	public Set<Locale> getLanguages() {
-		File[] files = new File("./data/lang/").listFiles(new FilenameFilter() {
+		File[] files = new File("data/lang/").listFiles(new FilenameFilter() {
 			@Override
 			public boolean accept(File dir, String name) {
 				return name

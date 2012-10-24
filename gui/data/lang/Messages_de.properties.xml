@@ -45,6 +45,6 @@
 	Autoren: Florian Bausch und Markus Holtermann</entry>
 	<entry key="deleteConfirm">Soll diese Datei wirklich gelöscht werden?</entry>
 	<entry key="deleteConfirmTitle">Löschen bestätigen</entry>
-	<entry key="overwriteConfirm">Soll diese Datei wirklich überschrieben werden?/entry>
+	<entry key="overwriteConfirm">Soll diese Datei wirklich überschrieben werden?</entry>
 	<entry key="overwriteConfirmTitle">Überschreiben bestätigen</entry>
 </properties>
